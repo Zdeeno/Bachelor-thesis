@@ -45,16 +45,23 @@ As we stated in previous chapter, tabular methods are very inefficient when it c
 \section{DQN}
 Neural network takes current state as input and outputs Q value for each possible action. Network is trained using gradient descent. As loss function $L$ is commonly used mean squared error between currently predicted Q value and discounted maximal future Q value plus reward.
 \begin{equation}
-L = \frac{1}{2}[R_{t+1} + \gamma max_{A_{t+1}}Q(S_{t+1}, A_{t+1}) - Q(S_t, A_t)]^2
+L = \frac{1}{2}[R_{t+1} + \gamma max_{A_{t+1}}Q(S_{t+1}, A_{t+1};\theta) - Q(S_t, A_t;\theta)]^2
 \end{equation}
-Unfortunately this simple DQN agent suffers from lack of sample efficiency and does not converge well. Deepmind proposed improvements which can help DQNs to achieve good results.
+where $\theta$ is set of weights of our function estimator (neural network). Unfortunately this simple DQN agent suffers from lack of sample efficiency and does not converge well. There is a lot of techniques which can help DQNs to achieve good results.
 
 \subsection{Experience replay}
 Experience replay is biologically inspired mechanism which stores all experiences (specifically: $S_t$, $A_t$, $R_{t+1}$, $S_{t+1}$) into buffer and then randomly choose batch of samples for training. It removes correlation in the observation sequence and improves sample efficiency of DQN.
 
 \subsection{Target network}
-Target network is another technique proposed by Deepmind to improve convergence of DQN learning. It uses two neural nets instead of one. We train first - training network on batch of data, but we use second - target network for predictions during training. When is training on batch completed, we update target network.
+Target network is another technique proposed by Mnih[Citace] to improve convergence of DQN learning. It uses two neural nets instead of one. We train first - training network on batch of data, but we use second - target network for predictions during training. When is training on batch completed, we update target network.
 \begin{equation}
-W_{target} = \tau W_{train} + (1-\tau)W_{target}
+\theta^- = \tau \theta + (1-\tau)\theta^-
 \end{equation}
-where $W$ are trainable weights of neural network and $\tau << 1$ is constant. Target network stabilize training since predicting network isn't changing after evaluation of every sample.
+where $\theta^-$ is set of trainable weights of target network, $\theta$ indicates online network weights and $\tau << 1$ is constant.
+Loss function is now computed using both target and online network.
+\begin{equation}
+L = \frac{1}{2}[R_{t+1} + \gamma max_{A_{t+1}}Q(S_{t+1}, A_{t+1};\theta^-) - Q(S_t, A_t;\theta)]^2
+\end{equation}
+Target network stabilize training since predicting network isn't changing after every training step.
+
+\subsection{Double Q-learning}
