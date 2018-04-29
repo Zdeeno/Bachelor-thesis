@@ -8,6 +8,7 @@
 
 \usepackage{algorithm}
 \usepackage[noend]{algpseudocode}
+\usepackage{mathtools}
 
 \ctusetup{
 %	preprint = \ctuverlog,
@@ -122,7 +123,7 @@ V Praze, \ctufield{day}.~\monthinlanguage{title}~\ctufield{year}
 
 \chapter{Introduction}
 
-Reinforcement learning (RL) is field of study consisting mainly of dynamic programming and machine learning. It is based on concepts of behavioural psychology, especially trial and error method and has experienced rapid development with growth of computational power and neural network in last years. Richard Sutton has made great summary of RL concepts in his book [citace]. One of biggest achievements was playing Atari games by RL agent, without any prior knowledge of environment [citace]. Soon after that has been introduced RL agent able to solve simple continuous problems as balancing inverse pendulum on cart. Nowadays state of the art methods can solve complex environments with infinite action spaces. Goal of this thesis is apply these methods to control solid-state lidar sensor with limited number of rays. Agent is divided into two parts - mapping and planning. Mapping part should create best possible reconstruction from sparse measurements. Planning part is focused on picking such rays that will maximise reconstruction accuracy. This thesis is based on work of Karel Zimmermann and his team, which proposed supervised learning agent for mapping and prioritised greedy policy for planning rays [citace].
+Reinforcement learning (RL) is field of study consisting mainly of dynamic programming and machine learning. It is based on concepts of behavioural psychology, especially trial and error method and has experienced rapid development with growth of computational power and neural networks improvement in last years. Richard Sutton has made great summary of RL concepts in his book [citace]. One of biggest achievements was playing Atari games by RL agent, without any prior knowledge of environment [citace]. Soon after that has been introduced RL agent able to solve simple continuous problems as balancing inverse pendulum on cart. Nowadays state of the art methods can solve complex environments with infinite action spaces. Goal of this thesis is apply these methods to control solid-state lidar sensor with limited number of rays. Agent is divided into two parts - mapping and planning. Mapping part should create best possible reconstruction from sparse measurements. Planning part is focused on picking such rays that will maximise reconstruction accuracy. This thesis is based on work of Karel Zimmermann and his team[citace], which proposed supervised learning agent for mapping and prioritised greedy policy for planning rays [citace].
 
 
 \part{Theoretical background}
@@ -132,31 +133,6 @@ Reinforcement learning (RL) is field of study consisting mainly of dynamic progr
 
 \input{ctutest-2}
 
-\blindmathtrue
-
-\blinddocument
-
-\begin{table}
-\begin{ctucolortab}
-\begin{tabular}{cc}
-\bfseries Foo & \bfseries Bar \\\Midrule
-foo1 & bar1 \\
-foo2 & bar2
-\end{tabular}
-\end{ctucolortab}
-\caption{Foobar.}
-\label{tab:foobar}
-\end{table}
-
-\begin{figure}
-\includegraphics[width=0.4\textwidth]{ctu_logo_black}
-\caption{Black logo of the CTU in Pragueueue.}
-\end{figure}
-
-\begin{figure}[!t]
-\includegraphics[width=0.4\textwidth]{ctu_logo_blue}
-\caption{Blue logo of the CTU in Pragueueue.}
-\end{figure}
 
 \chapter{Conclusions}
 

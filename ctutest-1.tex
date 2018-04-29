@@ -1,5 +1,5 @@
 \chapter{RL basics}
-At first we have to define an environment where agent can operate. Environment can be described as Markov decision process, where $S_t \in \mathcal{S}$ is state from set of possible states $\mathcal{S}$ in which is environment located in time $t$. Agent can observe environment's state and take action accordingly. Action is a transition between states. Every action $A_t \in \mathcal{A}$ moves environment from $S_t$ to $S_{t+1}$. Environment evaluates every action and return appropriate reward $R_t$. In RL is set $\mathcal{A}$ often called action space and set $\mathcal{S}$ observation space. Agent's main goal is to maximise reward.
+At first we have to define an environment where agent can operate. Environment can be described as Markov decision process, where $S_t \in \mathcal{S}$ is state from set of possible states $\mathcal{S}$ in which is the environment located in time $t$. Agent can observe environment's state and take action accordingly. Action is a transition between states. Every action $A_t \in \mathcal{A}$ moves the environment from $S_t$ to $S_{t+1}$. Environment evaluates every action and return appropriate reward $R_t$. In RL is set $\mathcal{A}$ often called action space and set $\mathcal{S}$ observation space. Agent's main goal is to maximise reward.
 
 \begin{figure}[!h]
 \includegraphics[scale=0.3]{images/RL-concept.png}
@@ -43,25 +43,45 @@ It is common to set $\epsilon = 1$ at the beginning of the training and decay ra
 As we stated in previous chapter, tabular methods are very inefficient when it comes to large environments. Here comes in play deep neural networks which can replace tables. Deep Q networks (DQN) proposed by Google's Deepmind [2015] outperformed all previous RL algorithms in playing Atari games. With neural networks grew also popularity of policy gradient methods [Sutton], where neural network outputs specific action instead of Q values.
 
 \section{DQN}
-Neural network takes current state as input and outputs Q value for each possible action. Network is trained using gradient descent. As loss function $L$ is commonly used mean squared error between currently predicted Q value and discounted maximal future Q value plus reward.
+Neural network takes current state as input and outputs Q value for each possible action. Network is trained using gradient descent. As loss function $L$ is commonly used mean squared error between currently predicted Q value and target value $Y$
 \begin{equation}
-L = \frac{1}{2}[R_{t+1} + \gamma max_{A_{t+1}}Q(S_{t+1}, A_{t+1};\theta) - Q(S_t, A_t;\theta)]^2
+Y = R_{t+1} + \gamma max_{A_{t+1}}Q(S_{t+1}, A_{t+1};\theta)
+\end{equation}
+\begin{equation}
+L = \frac{1}{2}[Y - Q(S_t, A_t;\theta)]^2
 \end{equation}
 where $\theta$ is set of weights of our function estimator (neural network). Unfortunately this simple DQN agent suffers from lack of sample efficiency and does not converge well. There is a lot of techniques which can help DQNs to achieve good results.
 
-\subsection{Experience replay}
-Experience replay is biologically inspired mechanism which stores all experiences (specifically: $S_t$, $A_t$, $R_{t+1}$, $S_{t+1}$) into buffer and then randomly choose batch of samples for training. It removes correlation in the observation sequence and improves sample efficiency of DQN.
-
 \subsection{Target network}
-Target network is another technique proposed by Mnih[Citace] to improve convergence of DQN learning. It uses two neural nets instead of one. We train first - training network on batch of data, but we use second - target network for predictions during training. When is training on batch completed, we update target network.
+Target network is technique proposed by Mnih[Citace] to improve convergence of DQN learning. It uses two neural nets instead of one. We train first - training network on batch of data, but we use second - target network for predictions during training. When is training on batch completed, we update target network.
 \begin{equation}
 \theta^- = \tau \theta + (1-\tau)\theta^-
 \end{equation}
 where $\theta^-$ is set of trainable weights of target network, $\theta$ indicates online network weights and $\tau << 1$ is constant.
-Loss function is now computed using both target and online network.
+Our target value $T$ is now calculated using target network:
 \begin{equation}
-L = \frac{1}{2}[R_{t+1} + \gamma max_{A_{t+1}}Q(S_{t+1}, A_{t+1};\theta^-) - Q(S_t, A_t;\theta)]^2
+Y = R_{t+1} + \gamma max_{A_{t+1}}Q(S_{t+1}, A_{t+1};\theta^-)
 \end{equation}
 Target network stabilize training since predicting network isn't changing after every training step.
 
+\subsection{Prioritized experience replay}
+Experience replay is biologically inspired mechanism proposed by [Schaul-citace] which stores all experiences (specifically: $S_t$, $A_t$, $R_{t+1}$, $S_{t+1}$) into buffer and assign priority to every experience. Main idea is that experiences with high TD error should have higher priority. For TD error applies:
+\begin{equation}
+TD_{error} = |Y - Q(S_t, A_t;\theta)|.
+\end{equation} 
+Further is necessary to calculate priority $p$ from TD error:
+\begin{equation}
+p = (TD_{error} + \beta)^\alpha
+\end{equation}
+where $\alpha$ tells us how much we would like to prefer experience with higher priority and $\beta << 1$ is a constant which helps us to avoid priorities very close to zero. Whereas greedy selection would abandon experiences with low priority, better approach is to choose experience $i \in \mathcal{I}$ with probability:
+\begin{equation}
+P(i) = \frac{p_i}{\sum_{\forall j \in \mathcal{I}} p_j}
+\end{equation}
+where $\mathcal{I}$ is set of all experiences in buffer. Now we can sample batch of experiences for training using this probability. It removes correlation in the observation sequence and improves sample efficiency of DQN. It is possible to store all experiences in buffer sorted by priority, but much more efficient implementation is a sum tree.
+
 \subsection{Double Q-learning}
+Classic Q-learning algorithm tends to overestimate actions under certain conditions. Hasselt et al [citace] propose idea of Double Q-learning which decompose the max operation into action selection and action evaluation. Target value is then computed by following equation.
+\begin{equation}
+Y = R_{t+1} + \gamma Q(S_{t+1}, argmax_{A_{t+1}}Q(S_{t+1}, A_{t+1};\theta);\theta^-).
+\end{equation}
+Double DQN outperforms DQN in terms of value accuracy and in terms of policy quality.
