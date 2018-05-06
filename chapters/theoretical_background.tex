@@ -1,0 +1,135 @@
+\section{RL basics}
+Firstly, environment where an agent is able operate must be defined. Environment can be described as Markov decision process, where $S_t \in \mathcal{S}$ is a state from a set of possible states $\mathcal{S}$ in which environment is located in time $t$. Agent can observe the state of the environment and take action accordingly. Action is a transition between states. Every action $A_t \in \mathcal{A}$ moves the environment from $S_t$ to $S_{t+1}$. The environment evaluates every action and returns appropriate reward $R_t$. In RL set $\mathcal{A}$ is often called action space and set $\mathcal{S}$ observation space. The main goal of the agent is to maximise a expected reward.
+
+\begin{figure}[!h]
+\centering
+\includegraphics[scale=0.3]{fig/RL-concept.png}
+\caption{RL concept}
+\end{figure}
+
+Major issue is that maximising immediate reward is often not an effective approach to maximising the overall reward. This greedy policy can take the agent into very disadvantageous state. Thus, the agent must take into account future states and rewards. In the past agents used to contain big tables which stored information about the quality of every action in every state. This is possible in environments with small action and observation spaces but is very memory consuming for larger environments and even impossible for continuous action or observation space. Therefore, modern methods use neural networks as function estimators.
+
+\subsection{Temporal difference learning}
+Temporal difference (TD) learning combines the ideas of Monte Carlo methods and dynamic programming. It is able to learn directly from experience obtained by interactions with an environment without any prior knowledge of said environment. TD learning is done by following an assignment in each timestamp [Sutton]
+\begin{equation}
+V(S_t) \gets V(S_t) + \alpha [R_{t} + \gamma V(S_{t+1}) - V(S_t)]
+\end{equation}
+where $V$ is so called state value, which shows how good is being in a particular state with the current policy. $\alpha \in \mathbb{R}^+$ is step size and $\gamma \in (0, 1)$ is discount factor.
+
+\subsection{Q-learning}
+Q-learning is type of TD learning developed by Watkins [1989]. The state value $V$ from previous subsection is replaced by $Q$ value, which refers to quality of action in a particular state instead of quality of the state itself. When we rewrite TD learning (1) to Q-learning we get:
+\begin{equation}
+Q(S_t, A_t) \gets Q(S_t, A_t) + \alpha [R_{t} + \gamma \underset{A_{t+1}}{max} Q(S_{t+1}, A_{t+1}) - Q(S_t, A_t)].
+\end{equation}
+Our policy here is to take action with maximal $Q$ value. That is called greedy policy. Obvious drawback of greedy policy is that it does not allow to explore the whole environment properly because an action with the highest $Q$ value is always chosen. A solution to this problem is sometimes take random action to explore the environment. This policy is often referred to as $\epsilon$-greedy policy.
+
+\begin{algorithm}
+\caption{$\epsilon$-greedy policy}\label{euclid}
+\begin{algorithmic}[1]
+\Procedure{ChooseAction}{}
+\State $\epsilon \gets \epsilon \cdot \epsilon_d$
+\If {$\epsilon >$ random $\in (0,1)$}
+\State action $\gets$ random $\in \mathcal{A}$
+\Else 
+\State action $\gets$ $\underset{A_t}{max} Q(S_t, A_t)$
+\EndIf
+\State \Return action
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
+
+It is common to set $\epsilon = 1$ at the beginning of the training and decay rate $\epsilon_d$ close to one. This policy assumes that it is needed to explore an environment first and then exploit agents experience.
+
+\clearpage
+\section{Deep neural networks in RL}
+As was stated in previous chapter, tabular methods are very inefficient in large environments. In these instances deep neural networks which can replace tables come into effect. Deep Q networks (DQN) proposed by Google’s Deepmind [2015] outperformed all previous RL algorithms in playing Atari games. With neural networks, also grew the popularity of policy gradient methods [Sutton], where neural network outputs a specific action instead of Q values. Note that the most of these methods are general and not necessarily tied to neural networks.
+
+\subsection{Deep Q network}
+Neural network takes current state as input and outputs Q value for each possible action. Network is trained using gradients of Q value in current state with respect to trainable weights $\theta$ of our neural network.
+\begin{align}
+\delta_t &= R_{t} + \gamma \underset{A_{t+1}}{max}Q^\theta(S_{t+1}, A_{t+1}) - Q^\theta(S_t, A_t)\\
+\theta_{t+1} &= \theta_t + \alpha \delta_t \nabla_\theta Q^\theta (S_t, A_t).
+\end{align}
+We are updating gradients in proportion to TD $\delta_t$. Unfortunately, this simple DQN agent suffers from a lack of sample efficiency and does not converge well. There are many techniques which can help DQNs to achieve satisfying results.
+
+\subsection{Target network}
+Target network is a technique proposed by Mnih[Citace] to improve convergence of DQN learning. It uses two neural nets instead of one. The first is trained online network on a batch of data and the second target network is used for predictions during training. After the completion of training on a batch of data, the target network is updated
+\begin{equation}
+\theta^- = \tau \theta + (1-\tau)\theta^-
+\end{equation}
+where $\theta^-$ is set of trainable weights of the target network, $\theta$ indicates online network weights and $\tau << 1$ is constant.
+TD $\delta$ is now calculated using target network:
+\begin{equation}
+\delta_t = R_{t} + \gamma \underset{A_{t+1}}{max}Q^{\theta^-}(S_{t+1}, A_{t+1}) - Q^\theta(S_t, A_t). 
+\end{equation}
+Target network stabilises training since predicting network does not change after each training step.
+
+\subsection{Prioritized experience replay}
+Experience replay is biologically inspired mechanism introduced by [Schaul-citace] which stores all experiences (specifically: $S_t$, $A_t$, $R_{t}$, $S_{t+1}$) into a buffer and assigns priority to every experience. Main idea is that experiences with high TD should have higher priority. Thus is necessary to calculate priority $p$ from TD error:
+\begin{equation}
+p = (|\delta_t | + \beta)^\alpha
+\end{equation}
+where $\alpha$ indicates how much we prefer experiences with higher priority and $\beta << 1$ is a constant which helps to avoid priorities very close to zero. Considering a greedy selection would abandon experiences with low priority, a better approach is to choose experience $i \in \mathcal{I}$ with probability:
+\begin{equation}
+P(i) = \frac{p_i}{\sum_{j \in \mathcal{I}} p_j}
+\end{equation}
+where $\mathcal{I}$ is set of all experiences in the buffer. It is possible now to sample a batch of experiences for training using this probability. It removes correlation in the observation sequence and improves sample efficiency of DQN. It is feasible to store all experiences in a buffer sorted by priority but a more efficient implementation is a sum tree.
+
+\subsection{Double Q-learning}
+Classic Q-learning algorithm tends to overestimate actions under certain conditions. Hasselt et al [citace] propose idea of Double Q-learning which decompose the max operation into action selection and action evaluation. Target value is then computed by following equation.
+\begin{equation}
+Y = R_{t} + \gamma Q(S_{t+1}, argmax_{A_{t+1}}Q(S_{t+1}, A_{t+1};\theta);\theta^-).
+\end{equation}
+Double DQN outperforms DQN in terms of value accuracy and in terms of policy quality.
+
+\clearpage
+\section{Policy gradient}
+By this section the goal of neural network was predicting values on the basis of which we determined the policy. In policy gradient method neural network approximates the policy itself. 
+\begin{equation}
+\theta_{t+1} = \theta_t + \alpha \widehat{\nabla J(\theta_t)}
+\end{equation}
+where $J$ is performance measure with respect to our neural network parameters and $\widehat{\nabla J(\theta_t)}$ is stochastic estimate which approximates gradient of performance measure. In other words, this method is basically doing stochastic gradient ascent of $J$ with respect to $\theta$ [Sutton]. Policy gradient methods are outperforming DQNs especially in continuous action spaces, because their output is directly continuous action instead of Q-value for every possible action.
+
+\subsection{Actor-Critic}
+Thanks to predicting action directly, we gain possibility to predict in continuous action space, but we lost the Q-value which assessed the advantage of action in certain state. That it why the Actor-Critic framework was created. It uses two separate neural networks - Actor which predicts action and Critic which asses action advantage and usually predicts the Q-value of action.
+\begin{figure}[!h]
+\centering
+\includegraphics[scale=0.55]{fig/actor-critic.png}
+\caption{Actor-Critic framework}
+\end{figure}
+\clearpage
+
+\subsection{Deterministic policy gradients}
+Deep deterministic policy gradient (DDPG) is one of methods exploiting the Actor-Critic framework. Before DDPG was common practice to use stochastic actor, which predicts parameters of distribution (usually normal distribution). Action of stochastic actor is then a random sample from predicted distribution. Whereas deterministic actor uses distribution sampling only for exploration of action space. We denote $\theta$ and $\omega$ for trainable weights of actor and critic, respectively. Critic update is very similar to DQN:
+\begin{align}
+\delta_t &= r_t + \gamma Q^\omega(S_{t+1}, \mu ^\theta (S_{t+1})) - Q^\omega(S_t, A_t)\\
+\omega_{t+1} &= \omega_t + \alpha \delta_t \nabla_\omega Q^\omega(S_t, A_t).
+\end{align}
+Note that instead of $A_{t+1}$ is now used function $\mu^\theta(S)$, which is an action estimate by actor neural network. Actor update rule is not so straightforward. 
+\begin{equation}
+\theta_{t+1} = \theta_t + \alpha\nabla_\theta \mu_{t+1}^\theta(S_t)\nabla_a Q^\omega (S_t, A_t)|_{a = \mu^\theta(S_t)}.
+\end{equation}
+This equation uses chain rule for derivatives to obtain gradient of Q-values with respect to trainable weights $\theta$. To be explicit:
+\begin{equation}
+\frac{\partial Q^\omega(S_t, A_t)}{\partial \theta} = \frac{\partial Q^\omega(S_t, A_t)}{\partial A_t} \frac{\partial A_t}{\partial \theta}.
+\end{equation}
+DDPG significantly outperforms its stochastic counterparts, especially in big continuous action spaces[Silver 2014].
+
+\subsection{Wolpetinger policy}
+Actor-Critic methods and DDPG works well in continuous action spaces, but there is a lot of problems with large discrete action spaces, such as recommender systems or lidar planning. Wolpetinger policy is approach how to utilize DDPG in discrete action space [Dulac 2016]. Actor doesn't predict action directly, but it predicts so called proto-action $\tilde{A_t}$.
+\begin{equation}
+\tilde{A_t} = \mu^\theta(S_t).
+\end{equation}
+Proto action mostly isn't valid action $\tilde{A_t} \notin \mathcal{A}$. Thus it is necessary to find valid action corresponding to proto action. This is done by computing euclidean distance to every possible action.
+\begin{equation}
+\mathcal{A}_{knn} = \underset{a \in \mathcal{A}}{argmin}^N | a - \tilde{A_t} |_2 .
+\end{equation}
+Usually policy choose $N$ closest action to the proto action. $\mathcal{A}_{knn}$ is the set of closest action to proto action. Whole set is then assessed by critic and action with highest Q-value is finally picked.
+\begin{equation}
+A_t = \underset{a \in \mathcal{A}_{knn}}{argmax} Q^\omega(S_t, a)
+\end{equation}
+\begin{figure}[!h]
+\centering
+\includegraphics[scale=0.4]{fig/wolpetinger-policy.png}
+\caption{Wolpetinger policy}
+\end{figure}

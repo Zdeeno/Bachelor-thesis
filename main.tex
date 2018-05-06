@@ -1,0 +1,132 @@
+\pdfoutput=1
+\documentclass[a4paper,12pt,titlepage, twoside]{article}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{amssymb,amsmath}
+\usepackage{algorithm,algpseudocode}
+\usepackage[title,titletoc]{appendix}
+\newcommand{\Author}{Zdeněk Rozsypálek}
+\newcommand{\Title}{Reinforcement learning for solid-state lidars}
+\newcommand{\Acronym}{Acronym}
+\newcommand{\WorkPackage}{WorkPackage}
+\newcommand{\DocName}{Thesis}
+\newcommand{\Subject}{\WorkPackage - \DocName}
+\newcommand{\Keywords}{mobile robotics}
+\newcommand{\Date}{1/1/2017}
+\newcommand{\DOCVersion}{0.1}
+\newcommand{\jed}[1]{\ensuremath{~\mathrm{#1}}} %příkaz pro sazbu fyzikálních jednotek
+
+\def\clinks{false}
+
+\input{chapters/doc_head}
+
+\renewcommand{\lstlistlistingname}{List of Algorithms}
+\renewcommand{\lstlistingname}{Listing}
+\definecolor{background_color}{rgb}{1.0, 1.0, 0.85}
+\definecolor{comment_color}{rgb}{0.0, 0.5, 0.0}
+\definecolor{keyword_color}{rgb}{0.0, 0.0, 1.0}
+\definecolor{string_color}{rgb}{0.8, 0.0, 0.0}
+\lstset{language=ksh}
+\lstset{backgroundcolor=\color{background_color}}
+\lstset{frameround=tttt}
+\lstset{columns=fullflexible}
+\lstset{keywordstyle=\color{keyword_color}\bfseries}
+\lstset{commentstyle=\color{comment_color}}
+\lstset{stringstyle=\color{string_color}}
+\lstset{basicstyle=\ttfamily}
+\lstset{showstringspaces=false}
+\lstset{frame=single}
+\lstset{keepspaces=true}
+\lstset{tabsize=4}
+\lstset{breaklines=true}
+\lstset{captionpos=b}
+
+\begin{document}
+\DocBegin
+
+%% Asymetric margins
+%% LEAVE ONLY IN THE PRINTED VERSION
+%% the electronic version should have symetric margins
+% \setlength{\oddsidemargin}{+0.5cm} 
+% \setlength{\evensidemargin}{-0.5cm}
+%%
+
+% Titulní stránka
+\input{chapters/title}
+\pagestyle{empty}
+\cleardoublepage
+
+%% The printed version of the acknowledgement page
+%% LEAVE ONLY FOR PRINT
+%\input{chapters/acknowledgement}
+%\cleardoublepage
+%%
+
+%% the scanned acknowledgement
+%% LEAVE ONLY FOR THE ELECTRONIC VERSION
+%~\vfill
+%\includegraphics[width=1\textwidth]{acknowledgement.jpg}
+%\cleardoublepage
+%%
+
+%% the scanned page (signed) with the assignement
+%% LEAVE ONLY FOR THE ELECTRONIC VERSION
+%\includepdf[pages={1}]{assignment_czech.pdf}
+%\cleardoublepage
+%\includepdf[pages={1}]{assignment_english.pdf}
+%\cleardoublepage
+%%
+
+\input{chapters/acknowledgement}
+\cleardoublepage % it is prefered for the 1. level sections to start on the 
+
+\input{chapters/abstract_en}
+\input{chapters/abstract_cz}
+\cleardoublepage
+
+\pagestyle{fancy}
+\pagenumbering{roman}
+\cfoot{\thepage}
+\tableofcontents
+\cleardoublepage
+
+\listoffigures
+\cleardoublepage
+
+\pagestyle{fancy}
+\pagenumbering{arabic}
+\cfoot{}
+\rfoot{\thepage$/$\pageref{LastPage}}
+\setlength{\parskip}{0.35cm}
+
+\lhead{INTRODUCTION}
+\input{chapters/introduction}
+\clearpage
+
+\lhead{THEORETICAL BACKGROUND}
+\input{chapters/theoretical_background}
+\clearpage
+
+\lhead{EXPERIMENT}
+%\input{chapters/experiment}
+\clearpage
+
+\lhead{CONCLUSION}
+\input{chapters/conclusion}
+\cleardoublepage
+
+% the list of all literature should be supplied in main.bib
+\bibliography{main}{}
+\cleardoublepage
+\bibliographystyle{plain}
+\clearpage
+
+\appendices
+\lhead{\emph{APPENDIX \leftmark}} 
+\input{chapters/cd_content}
+\cleardoublepage
+
+\input{chapters/list_of_abbreviations}
+\cleardoublepage
+
+\end{document}
