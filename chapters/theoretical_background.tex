@@ -17,7 +17,7 @@ V(S_t) \gets V(S_t) + \alpha [R_{t} + \gamma V(S_{t+1}) - V(S_t)]
 where $V$ is so called state value, which shows how good is being in a particular state with the current policy. $\alpha \in \mathbb{R}^+$ is step size and $\gamma \in (0, 1)$ is discount factor.
 
 \subsection{Q-learning}
-Q-learning is type of TD learning developed by Watkins [1989]. The state value $V$ from previous subsection is replaced by $Q$ value, which refers to quality of action in a particular state instead of quality of the state itself. When we rewrite TD learning (1) to Q-learning we get:
+Q-learning is type of TD learning developed by Watkins \cite{watkins1992}. The state value $V$ from previous subsection is replaced by $Q$ value, which refers to quality of action in a particular state instead of quality of the state itself. When we rewrite TD learning (1) to Q-learning we get:
 \begin{equation}
 Q(S_t, A_t) \gets Q(S_t, A_t) + \alpha [R_{t} + \gamma \underset{A_{t+1}}{max} Q(S_{t+1}, A_{t+1}) - Q(S_t, A_t)].
 \end{equation}
