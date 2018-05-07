@@ -5,6 +5,7 @@
 \usepackage{amssymb,amsmath}
 \usepackage{algorithm,algpseudocode}
 \usepackage[title,titletoc]{appendix}
+\usepackage{natbib}
 \newcommand{\Author}{Zdeněk Rozsypálek}
 \newcommand{\Title}{Reinforcement learning for solid-state lidars}
 \newcommand{\Acronym}{Acronym}
@@ -43,7 +44,7 @@
 
 \begin{document}
 \DocBegin
-
+\nocite{*}
 %% Asymetric margins
 %% LEAVE ONLY IN THE PRINTED VERSION
 %% the electronic version should have symetric margins
@@ -90,9 +91,6 @@
 \tableofcontents
 \cleardoublepage
 
-\listoffigures
-\cleardoublepage
-
 \pagestyle{fancy}
 \pagenumbering{arabic}
 \cfoot{}
@@ -108,7 +106,7 @@
 \clearpage
 
 \lhead{EXPERIMENT}
-%\input{chapters/experiment}
+\input{chapters/experiment}
 \clearpage
 
 \lhead{CONCLUSION}
@@ -116,9 +114,8 @@
 \cleardoublepage
 
 % the list of all literature should be supplied in main.bib
-\bibliography{main}{}
-\cleardoublepage
 \bibliographystyle{plain}
+\bibliography{main}{}
 \clearpage
 
 \appendices
@@ -127,6 +124,9 @@
 \cleardoublepage
 
 \input{chapters/list_of_abbreviations}
+\cleardoublepage
+
+\listoffigures
 \cleardoublepage
 
 \end{document}
