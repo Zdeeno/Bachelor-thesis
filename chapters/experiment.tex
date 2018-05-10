@@ -1,2 +1,14 @@
 \section{Experiment}
-Blah
+This experiment aims at using reinforcement learning algorithms for solid-state lidar with steerable rays and limited number of actions. At first it was necessary to create environment where the agent can learn and evaluate\cite{rozsypalek2018}. Environment is written in python based on OpenAI gym interface \cite{openai2016}. It uses point clouds from Kitti dataset drives\cite{geiger2013}. Large point clouds from Kitti dataset are processed into 3D voxel maps by C++ package \cite{petricek2017}, which also provides ray tracing engine for environment. Every voxel map is 3D array containing real numbers which corresponds to the occupancy $c$ of each voxel.
+\begin{align}
+\begin{split}
+c &> 0 \quad \text{occupied voxel} \\
+c &= 0 \quad \text{unknown occupancy} \\
+c &< 0 \quad \text{empty voxel.}
+\end{split}
+\end{align}
+Environment also offers visualisation of actions using Mayavi \cite{mayavi2011} and ASCII art. Agents use neural networks as function estimators, which are handled by Tensorflow \cite{tensorflow2015} and Keras \cite{keras2015}.
+
+\subsection{Environments}
+Lidar-gym implements several environments, which follow same template with different sizes. Observation space is voxel map, which provides occupancies from sensor sparse measurements. Action space is divided into two parts. First part is dense voxel map reconstructed from observations (sparse measurements). Second part of action space are directions of measuring rays. Each ray has own azimuth and elevation. Environment expects direction in format of 2D array of booleans, where true means fired ray.
+
