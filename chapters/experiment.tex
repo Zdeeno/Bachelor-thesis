@@ -1,5 +1,5 @@
 \section{Experiment}
-This experiment aims at using reinforcement learning algorithms for solid-state lidar with steerable rays and limited number of actions. At first it was necessary to create environment where the agent can learn and evaluate\cite{rozsypalek2018}. Environment is written in python based on OpenAI gym interface \cite{openai2016}. It uses point clouds from Kitti dataset drives\cite{geiger2013}. Large point clouds from Kitti dataset are processed into 3D voxel maps by C++ package \cite{petricek2017}, which also provides ray tracing engine for environment. Every voxel map is 3D array containing real numbers which corresponds to the occupancy $c$ of each voxel.
+Experiment aims at using reinforcement learning algorithms for solid-state lidar with steerable rays and limited number of rays. At first it was necessary to create environment where the agent can learn and evaluate \cite{rozsypalek2018}. Environment is written in python based on OpenAI gym interface \cite{openai2016}. It uses point clouds from Kitti dataset drives\cite{geiger2013}. One episode of learning in environment corresponds to one drive in Kitti dataset. Large point clouds from drives are processed into 3D voxel maps by C++ package \cite{petricek2017}, which also provides ray tracing engine for environment. Every voxel map is 3D array containing real numbers which corresponds to the occupancy $c$ of each voxel.
 \begin{align}
 \begin{split}
 c &> 0 \quad \text{occupied voxel} \\
@@ -10,5 +10,56 @@ c &< 0 \quad \text{empty voxel.}
 Environment also offers visualisation of actions using Mayavi \cite{mayavi2011} and ASCII art. Agents use neural networks as function estimators, which are handled by Tensorflow \cite{tensorflow2015} and Keras \cite{keras2015}.
 
 \subsection{Environments}
-Lidar-gym implements several environments, which follow same template with different sizes. Observation space is voxel map, which provides occupancies from sensor sparse measurements. Action space is divided into two parts. First part is dense voxel map reconstructed from observations (sparse measurements). Second part of action space are directions of measuring rays. Each ray has own azimuth and elevation. Environment expects direction in format of 2D array of booleans, where true means fired ray.
+Lidar-gym implements several environments, which follow same template with different sizes. Observation space is local cutout of voxel map, which provides occupancies from sensor sparse measurements. Sensor is located in quarter of x axis and half of y and z axis of local cutout. Action space is divided into two parts. First part is dense voxel map reconstructed from observations (sparse measurements). Second part of action space are directions of measuring rays. Each ray has own azimuth and elevation. Environment expects directions in format of 2D array of booleans, where true means fired ray. Environments reward is negative logistic loss $-L$ \eqref{eq:loglos}. Lidar-gym defines environments with following parameters.
 
+\begin{table}[h]
+\centering
+\begin{tabular}{|c||c|c|c|}
+\hline
+Name of environment     & Large                        & Small                        & Toy                       \\ \hline
+Voxel map size [voxels] & 320 $\times$ 320 $\times$ 32 & 160 $\times$ 160 $\times$ 16 & 80 $\times$ 80 $\times$ 8 \\ \hline
+Lidar FOV [\textdegree]           & 120 $\times$ 90              & 120 $\times$ 90              & 120 $\times$ 90           \\ \hline
+Densitiy of rays        & 160 $\times$ 120             & 120 $\times$ 90              & 40 $\times$ 30            \\ \hline
+Lidar range [m]         & 42                           & 42                           & 42                        \\ \hline
+Number of rays          & 200                          & 50                           & 15                        \\ \hline
+Voxel size [m] & 0.2 & 0.4 & 0.8 \\ \hline
+Episode training time [min] & 120 & 15 & 1.5 \\ \hline
+\end{tabular}
+\caption{Environment description}
+\end{table}
+
+\clearpage
+Due to the high time complexity were all experiments conducted in toy environment. RL agents need significantly more training steps than supervised agents. In OpenAI baselines \cite{openai2017} are RL agents trained for over million timestamps. One drive in Kitti dataset has on average 200 timestamps. All agents was trained and evaluated on different  drives from city part of dataset.
+
+\subsection{Mapping agent}
+Mapping agent is based on work of Zimmermann et al \cite{zimmermann2017}. It uses convolutional neural network (CNN) for reconstructing dense map from sparse measurements. 3D convolutional layers are used to learn the features and max pooling layers to avoid overfitting. Whole CNN architecture is described in figure \ref{fig:supervised}.
+\vspace{3mm}
+\begin{figure}[!h]
+\centering
+\includegraphics[scale=0.6]{fig/supervised.pdf}
+\caption{Mapping network architecture}
+\label{fig:supervised}
+\end{figure}
+
+For gradient descent is used logistic loss $L$ between ground truth map $Y$ and predicted dense map $\hat{Y}$.
+\begin{equation} \label{eq:loglos}
+L(Y, \hat{Y}) = \sum\limits_i w_i \log(1 + \exp(Y_i \hat{Y_i}))
+\end{equation}
+where $w$ are weights which balance importance of occupied and unoccupied voxels.
+\clearpage
+Unfortunately naive implementation of this loss function is computationally inconvenient and often cause numerical issues as underflow or overflow. To stabilize training following modified loss was used \cite{matconvnet2015}.
+\begin{align} 
+\begin{split}
+a_i &= Y_i \hat{Y_i} \\
+b_i &= \max(0, a_i) \\
+L &= \sum\limits_i w_i (b_i + \log(\exp(-b_i) + \exp(a_i-b_i))).
+\end{split}
+\end{align}
+At first we train mapping agent with random ray planning. Reconstructions of supervised agent are then used for training RL planning agents and after that is mapping agent retrained with RL agent picking the rays.
+\subsection{Discrete planning agent}
+Insomuch as environment input for direction of the rays is 2D binary array, first try is to use discrete agent. DQN is the most used option for discrete action space but in this use case it requires some tweaks. Note that number of possible actions is extremely large. Even in toy environment it is $40\times30 \choose 15$ $\approx 10^{34}$ of actions. Thus is necessary to emphasize on action space exploration. Further arises problem with $\epsilon$-greedy policy, because we are unable to process all possible actions and pick one with the biggest Q-value. To solve this issue is considered one ray as an action and for $K$ rays is TD from \eqref{eq:qlearn} now computed as:
+\begin{align}
+q(S_t, A_t) &= \max\limits_{A_t}^K Q^\theta(S_t, A_t)\\
+\delta_t &= R_t + \gamma \overline{q}(S_{t+1}, A_{t+1}) - \overline{q}(S_t, A_t)
+\end{align}
+where $\overline{q}$ is average $Q$ value over $K$ actions with maximal $Q$ values.

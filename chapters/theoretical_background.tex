@@ -1,5 +1,5 @@
 \section{RL basics}
-Firstly, environment where an agent is able to operate must be defined. Environment can be described as Markov decision process, where $S_t \in \mathcal{S}$ is a state from a set of possible states $\mathcal{S}$ in which environment is located in time $t$. Agent can usually observe the state of the environment and take action accordingly. Action is a probabilistic transition between states. Every action $A_t \in \mathcal{A}$ moves the environment from $S_t$ to $S_{t+1}$. The environment evaluates every action and returns appropriate reward $R_t$ (figure 1). In RL set $\mathcal{A}$ is often called action space and set $\mathcal{S}$ observation space. The main goal of the agent is to find policy $\pi$ which maximises expected return. Return $G_t$ is a sum of discounted future rewards \cite{sutton2012}.
+Firstly, environment where an agent is able to operate must be defined. Environment can be described as Markov decision process, where $S_t \in \mathcal{S}$ is a state from a set of possible states $\mathcal{S}$ in which environment is located in time $t$. Agent can usually observe the state of the environment and take action accordingly. Action is a probabilistic transition between states. Every action $A_t \in \mathcal{A}$ moves the environment from $S_t$ to $S_{t+1}$. The environment evaluates every action and returns appropriate reward $R_t$ (figure \ref{fig:rlconcept}). In RL set $\mathcal{A}$ is often called action space and set $\mathcal{S}$ observation space. The main goal of the agent is to find policy $\pi$ which maximises expected return. Return $G_t$ is a sum of discounted future rewards \cite{sutton2012}.
 \begin{equation}
 G_t = \sum\limits_{k=0}^{\infty}\gamma^k R_{t+k}
 \end{equation}
@@ -11,13 +11,14 @@ Optimal policy $\pi^*$ is then defined as
 \begin{equation}
 \pi^*(S_t) \doteq \max\limits_\pi V_\pi(S_t),
 \end{equation}
-for all $S_t \in \mathcal{S}$
+for all $S_t \in \mathcal{S}$.
 In the past agents used big tables to estimate the value function. This is possible in environments with small action and observation spaces but is very memory consuming for larger environments and even impossible for continuous action or observation space. Therefore, modern methods use neural networks as function estimators.
 
 \begin{figure}[!h]
 \centering
 \includegraphics[scale=0.3]{fig/RL-concept.png}
 \caption{RL concept}
+\label{fig:rlconcept}
 \end{figure}
 
 \subsection{Temporal difference learning}
@@ -35,7 +36,7 @@ Q(S_t, A_t) \gets Q(S_t, A_t) + \alpha [R_{t} + \gamma \underset{A_{t+1}}{\max} 
 Our policy here is to take action with maximal $Q$ value. That is called greedy policy. Obvious drawback of greedy policy is that it does not allow to explore the whole environment properly because an action with the highest $Q$ value is always chosen. A solution to this problem is sometimes take random action to explore the environment. This policy is often referred to as $\epsilon$-greedy policy.
 
 \begin{algorithm}
-\caption{$\epsilon$-greedy policy}\label{euclid}
+\caption{$\epsilon$-greedy policy}
 \begin{algorithmic}[1]
 \Procedure{ChooseAction}{}
 \State $\epsilon \gets \epsilon \cdot \epsilon_d$
@@ -57,7 +58,7 @@ As was stated in previous chapter, tabular methods are very inefficient in large
 
 \subsection{Deep Q network}
 Neural network takes current state as input and outputs Q value for each possible action. Network is trained using gradients of Q value in current state with respect to trainable weights $\theta$ of our neural network.
-\begin{align}
+\begin{align} \label{eq:qlearn}
 \delta_t &= R_{t} + \gamma \underset{A_{t+1}}{\max}Q^\theta(S_{t+1}, A_{t+1}) - Q^\theta(S_t, A_t)\\
 \theta_{t+1} &= \theta_t + \alpha \delta_t \nabla_\theta Q^\theta (S_t, A_t).
 \end{align}
@@ -102,11 +103,12 @@ By this section the goal of neural network was predicting values on the basis of
 where $J$ is performance measure with respect to our neural network parameters and $\widehat{\nabla J(\theta_t)}$ is stochastic estimate which approximates gradient of performance measure. In other words, this method is basically doing stochastic gradient ascent of $J$ with respect to $\theta$ \cite{sutton1999}. Policy gradient methods are outperforming DQNs especially in continuous action spaces, because their output is directly continuous action instead of Q-value for every possible action.
 
 \subsection{Actor-Critic}
-Thanks to predicting action directly, we gain possibility to predict in continuous action space, but we lost the Q-value which assessed the advantage of action in certain state. That it why the Actor-Critic framework was created. It uses two separate neural networks - Actor which predicts action and Critic which assesses action advantage.
+Thanks to predicting action directly, we gain possibility to predict in continuous action space, but we lost the Q-value which assessed the advantage of action in certain state. That it why the Actor-Critic framework was created. It uses two separate neural networks - Actor which predicts action and Critic which assesses action advantage. Concept is visualised in the figure \ref{fig:actorcritic}.
 \begin{figure}[!h]
 \centering
 \includegraphics[scale=0.55]{fig/actor-critic.png}
 \caption{Actor-Critic framework}
+\label{fig:actorcritic}
 \end{figure}
 \clearpage
 
@@ -127,15 +129,15 @@ This equation uses chain rule for derivatives to obtain gradient of Q-values wit
 DDPG significantly outperforms its stochastic counterparts, especially in big continuous action spaces \cite{silver2014}.
 
 \subsection{Wolpetinger policy}
-Actor-Critic methods and DDPG work well in continuous action spaces, but there is a lot of problems with large discrete action spaces, such as recommender systems or lidar planning. Wolpetinger policy is approach how to utilize DDPG in discrete action space \cite{dulac2015}. Actor doesn't predict action directly, but it predicts so called proto-action $\tilde{A_t}$.
+Actor-Critic methods and DDPG work well in continuous action spaces, but there is a lot of usecases with large discrete action spaces, such as recommender systems or lidar planning. Wolpetinger policy is approach how to utilize DDPG in discrete action space \cite{dulac2015}. Whole policy is illustrated in figure \ref{fig:wolpetinger}. Actor doesn't predict action directly, but it predicts so called proto-action $\tilde{A_t}$.
 \begin{equation}
 \tilde{A_t} = \mu^\theta(S_t).
 \end{equation}
 Proto action mostly isn't valid action $\tilde{A_t} \notin \mathcal{A}$. Thus it is necessary to find valid action corresponding to proto action. This is done by computing euclidean distance to every possible action.
 \begin{equation}
-\mathcal{A}_{knn} = \underset{a \in \mathcal{A}}{\text{argmin}}^N | a - \tilde{A_t} |_2 .
+\mathcal{A}_{knn} = \overset{N}{\underset{a \in \mathcal{A}}{{\text{argmin}}}} | a - \tilde{A_t} |_2 .
 \end{equation}
-Usually policy choose $N$ closest action to the proto action. $\mathcal{A}_{knn}$ is the set of closest action to proto action. Whole set is then assessed by critic and action with highest Q-value is finally picked.
+Usually policy choose $N$ closest actions to the proto action. $\mathcal{A}_{knn}$ is the set of closest action to the proto action. Whole set is then assessed by critic and action with highest Q-value is finally picked.
 \begin{equation}
 A_t = \underset{a \in \mathcal{A}_{knn}}{\text{argmax}} Q^\omega(S_t, a)
 \end{equation}
@@ -143,11 +145,12 @@ A_t = \underset{a \in \mathcal{A}_{knn}}{\text{argmax}} Q^\omega(S_t, a)
 \centering
 \includegraphics[scale=0.35]{fig/wolpetinger-policy.png}
 \caption{Wolpetinger policy illustration}
+\label{fig:wolpetinger}
 \end{figure}
 
 \subsection{Parameter and action space noise}
 In large action space is very important to emphasize agents exploration. Bad exploration can cause that agent converges prematurely and ends up in local optimum. DDPG commonly use stochastic policy to slightly modify actors actions.
-\begin{equation}
+\begin{equation} \label{eq:exploration}
 \hat{A_t} = \mu^\theta(S) + \mathcal{N}(0, \sigma^2)
 \end{equation}
 where $\mathcal{N}$ is normal distribution with mean value equal to zero and variance, which is reducing during the training and $\hat{A_t}$ is perturbed action. Action space noise helps agent to explore the environment. Another approach is to apply noise directly to actors weights. It can sometimes lead to more consistent exploration and richer behaviours \cite{plappert2017}.
@@ -156,7 +159,7 @@ where $\mathcal{N}$ is normal distribution with mean value equal to zero and var
 \end{equation}
 where $\hat{\theta}$ is so called perturbed actor, which is interacting with environment. 
 \clearpage
-Major issue of parameter space noise is that it is much harder to tune. When we use action space noise it is easy to estimate its impact on actions (differences between both approaches can be seen in the figure 4). Whereas parameter space noise has very unpredictable results. Thus it is necessary to use adaptive noise scaling.
+Major issue of parameter space noise is that it is much harder to tune. When we use action space noise it is easy to estimate its impact on actions (differences between both approaches can be seen in the figure \ref{fig:exploration}). Because of unpredictable influence of parameter space noise is necessary to use adaptive noise scaling.
 \begin{align}
 d &= |\hat{A_t} - \mu^\theta(S_t)|_2  \\
 \sigma_{t+1} &= 
@@ -171,10 +174,11 @@ where $\kappa$ is scaling factor slightly bigger than one and $T$ is threshold v
 \centering
 \includegraphics[scale=0.5]{fig/perturbations.png}
 \caption{Action vs. parameter space noise}
+\label{fig:exploration}
 \end{figure}
 
-When is necessary to explore action space near to some specific action or include momentum of environment, it is possible to use Ornstein-Uhlenbeck random process. \citep{lilicrap2015}. 
+When is necessary to explore action space near to some specific action or include momentum of environment, it is possible to use Ornstein-Uhlenbeck random process \citep{lilicrap2015}. 
 \begin{equation}
 \hat{A_t} = \mu^\theta(S)  + \nu (\rho - \mu^\theta(S)) + \phi \mathcal{N}(0, 1),
 \end{equation}
-where $nu, \phi \in [0, 1]$ are constants of the random process and $\nu$ is mean value around which we want to explore the action space. 
+where $\nu, \phi \in [0, 1]$ are constants of the random process and $\nu$ is mean value around which we want to explore the action space. When $\nu = 0$ it is basic exploration as in expression \eqref{eq:exploration}.
