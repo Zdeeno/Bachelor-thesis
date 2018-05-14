@@ -20,6 +20,7 @@ In the past agents used big tables to estimate the value function. This is possi
 \caption{RL concept}
 \label{fig:rlconcept}
 \end{figure}
+\pagebreak
 
 \subsection{Temporal difference learning}
 Temporal difference (TD) learning combines the ideas of Monte Carlo methods and dynamic programming. It is able to learn directly from experience obtained by interactions with an environment without any prior knowledge of said environment. TD learning is done by following assignment in each timestamp \cite{sutton2012}
@@ -103,14 +104,14 @@ By this section the goal of neural network was predicting values on the basis of
 where $J$ is performance measure with respect to our neural network parameters and $\widehat{\nabla J(\theta_t)}$ is stochastic estimate which approximates gradient of performance measure. In other words, this method is basically doing stochastic gradient ascent of $J$ with respect to $\theta$ \cite{sutton1999}. Policy gradient methods are outperforming DQNs especially in continuous action spaces, because their output is directly continuous action instead of Q-value for every possible action.
 
 \subsection{Actor-Critic}
-Thanks to predicting action directly, we gain possibility to predict in continuous action space, but we lost the Q-value which assessed the advantage of action in certain state. That it why the Actor-Critic framework was created. It uses two separate neural networks - Actor which predicts action and Critic which assesses action advantage. Concept is visualised in the figure \ref{fig:actorcritic}.
-\begin{figure}[!h]
+Thanks to predicting action directly, we gain possibility to predict in continuous action space, but we lost the Q-value which assessed the advantage of action in certain state. That it why the Actor-Critic framework was created. It uses two separate neural networks - actor which predicts action and critic which assesses action advantage. Concept is visualised in the figure \ref{fig:actorcritic}.
+\begin{figure}[H]
 \centering
 \includegraphics[scale=0.55]{fig/actor-critic.png}
 \caption{Actor-Critic framework}
 \label{fig:actorcritic}
 \end{figure}
-\clearpage
+\pagebreak
 
 \subsection{Deterministic policy gradients}
 Deep deterministic policy gradient (DDPG) is one of methods exploiting the Actor-Critic framework. Before DDPG was common practice to use stochastic actor, which predicts parameters of distribution (usually normal distribution). Action of stochastic actor is then a random sample from predicted distribution. Whereas deterministic actor uses distribution sampling only for exploration of action space. We denote $\theta$ and $\omega$ for trainable weights of actor and critic, respectively. Critic update is very similar to DQN:
@@ -134,7 +135,7 @@ Actor-Critic methods and DDPG work well in continuous action spaces, but there i
 \tilde{A_t} = \mu^\theta(S_t).
 \end{equation}
 Proto action mostly isn't valid action $\tilde{A_t} \notin \mathcal{A}$. Thus it is necessary to find valid action corresponding to proto action. This is done by computing euclidean distance to every possible action.
-\begin{equation}
+\begin{equation} \label{eq:knn}
 \mathcal{A}_{knn} = \overset{N}{\underset{a \in \mathcal{A}}{{\text{argmin}}}} | a - \tilde{A_t} |_2 .
 \end{equation}
 Usually policy choose $N$ closest actions to the proto action. $\mathcal{A}_{knn}$ is the set of closest action to the proto action. Whole set is then assessed by critic and action with highest Q-value is finally picked.
@@ -158,7 +159,7 @@ where $\mathcal{N}$ is normal distribution with mean value equal to zero and var
 \hat{\theta} = \theta + \mathcal{N}(0, \sigma^2)
 \end{equation}
 where $\hat{\theta}$ is so called perturbed actor, which is interacting with environment. 
-\clearpage
+\pagebreak
 Major issue of parameter space noise is that it is much harder to tune. When we use action space noise it is easy to estimate its impact on actions (differences between both approaches can be seen in the figure \ref{fig:exploration}). Because of unpredictable influence of parameter space noise is necessary to use adaptive noise scaling.
 \begin{align}
 d &= |\hat{A_t} - \mu^\theta(S_t)|_2  \\
