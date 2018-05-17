@@ -1,5 +1,5 @@
 \section{Experiment}
-Experiment aims at using reinforcement learning algorithms for solid-state lidar with steerable rays and limited number of rays. At first it was necessary to create environment where the agent can learn and evaluate \cite{rozsypalek2018}. Lidar-gym environment is written in python 3 based on OpenAI gym interface \cite{openai2016}. It uses point clouds from Kitti dataset drives\cite{geiger2013}. One episode of learning in environment corresponds to one drive in Kitti dataset. Large point clouds from drives are processed into 3D voxel maps by C++ package \cite{petricek2017}, which also provides ray tracing engine for environment. Every voxel map is 3D array containing real numbers which corresponds to the occupancy $c$ of each voxel.
+Experiment aims at using reinforcement learning algorithms for solid-state lidar with steerable rays and limited number of rays. At first it was necessary to create environment where the agent can learn and evaluate \cite{rozsypalek2018}. Lidar-gym environment is written in python 3 based on OpenAI gym interface \cite{openai2016}. It uses point clouds from Kitti dataset drives\cite{geiger2013}. One episode of learning in environment corresponds to one drive in Kitti dataset. Large point clouds from drives are processed into 3D voxel maps by C++ package \cite{petricek2017}, which also provides ray tracing engine for environment. Every voxel map is 3D array containing real numbers which corresponds to the occupancy confidence $c$ of each voxel.
 \begin{align}
 \begin{split}
 c &> 0 \quad \text{occupied voxel} \\
@@ -65,7 +65,7 @@ Insomuch as environment input for direction of the rays is 2D binary array, firs
 q(S_t, A_t) &= \max\limits_{A_t}^K Q^\theta(S_t, A_t)\\
 \delta_t &= R_t + \gamma \overline{q}(S_{t+1}, A_{t+1}) - \overline{q}(S_t, A_t)
 \end{align}
-where $\overline{q}$ is average $Q$ value over $K$ actions with maximal $Q$ values. DQN agent implements all available features described in theoretical part of this thesis as Prioritized experience replay, target network and double Q learning. Exploration is ensured by action space noise. Parameter values of agent are shown in table \ref{tab:dqlparam} and neural network architecture in figure \ref{fig:dqn}. For gradient descent is used Adam optimizer.
+where $\overline{q}$ is average $Q$ value over $K$ actions with maximal $Q$ values. DQN agent implements all available features described in theoretical part of this thesis as Prioritized experience replay, target network and double Q learning. Exploration is ensured by action space noise. Parameter values of agent are shown in table \ref{tab:dqlparam} and neural network architecture in figure \ref{fig:dqn}. For gradient descent is used Adam optimizer with learning rate $\lambda$.
 
 \begin{table}[H]
   \centering
@@ -74,7 +74,7 @@ where $\overline{q}$ is average $Q$ value over $K$ actions with maximal $Q$ valu
     Parameter & Value \\
     \midrule
     $\gamma$ & X \\
-    $\alpha$ & X \\
+    $\lambda$ & X \\
     $\tau$ & X \\
     $\epsilon_d$ & X \\
     \bottomrule
@@ -93,8 +93,31 @@ where $\overline{q}$ is average $Q$ value over $K$ actions with maximal $Q$ valu
 \end{figure}
 
 \subsubsection{Wolpetinger policy}
-Wolpetinger policy is currently state-of-the-art method for discrete action spaces, because it utilize actor-critic continuous methods. It was tested on recommender systems with over a million discrete actions \cite{dulac2015}. That is large action space, but significantly smaller than action space of Lidar-gym environment. Obvious problem comes in place during action embedding in formula \eqref{eq:knn}. It is not possible to compute KNN with so many possible actions. When is KNN substituted by picking rays with highest value, agent does not converge well. It abandons some rays very soon and get stuck in local optimum.
+Wolpetinger policy is currently state-of-the-art method for discrete action spaces, because it utilize actor-critic to continuous methods. It was tested on recommender systems with over a million discrete actions \cite{dulac2015}. That is large action space, but significantly smaller than action space of Lidar-gym environment. Obvious problem comes in place during action embedding in formula \eqref{eq:knn}. It is not possible to compute KNN with so many possible actions. When is KNN substituted by picking rays with highest value, agent does not converge well. It abandons some possible actions very soon and get stuck in local optimum.
 
 \clearpage
 \subsection{Continuous planning agent}
-To avoid extremely large actions was discrete action space substituted by continuous action, which is then mapped into 2D binary array. Thank to this change it is possible to exploit actor-critic framework. Output of actor is now $2$ by $K$ array where first row is the elevation and second is the azimuth of each ray. Last layer of the actor network is tanh function, so its output is element of $[-1, 1]$. As training algorithm is used DDPG. To explore action space correctly it is necessary to apply Ornstein-Uhlenback random process. When we use only normal distribution for action space noise, actions tend to converge into the corners very fast.
+To avoid extremely large action space was discrete action space substituted by continuous action, which is then mapped into 2D binary array. Thank to this substitution it is possible to exploit actor-critic framework. Output of actor is now $2$ by $K$ array where first row is the elevation and second is the azimuth of each ray. Last layer of the actor network is tanh function, so its output is element of $[-1, 1]$. As training method is used DDPG. Neural network architecture is described in the figure \ref{fig:ddpg}
+
+\begin{figure}[!h]
+\centering
+\includegraphics[scale=0.55]{fig/ddpg.pdf}
+\caption{DDPG architecture}
+\label{fig:ddpg}
+\end{figure}
+
+\pagebreak
+To explore action space correctly it is necessary to apply Ornstein-Uhlenbeck random process. When only normal distribution for action space noise is used, actions tend to converge into the corners very fast as in figure \ref{fig:expdiff}. For both actor and critic is used Adam optimizer with learning rates $\lambda_{a}$, $\lambda_{c}$. To stabilize critic learning is used target network. Further continuous agent uses prioritized experience replay.
+
+\begin{figure}[H]
+\begin{subfigure}[h]{0.5\linewidth}
+\includegraphics[width=\linewidth]{fig/wrong_action.eps}
+\end{subfigure}
+\hfill
+\begin{subfigure}[h]{0.5\linewidth}
+\includegraphics[width=\linewidth]{fig/right_action.eps}
+\end{subfigure}
+\captionsetup{width=1\textwidth}
+\caption{Difference between actions made by agents with different exploration methods}
+\label{fig:expdiff}
+\end{figure}

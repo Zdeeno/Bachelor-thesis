@@ -264,4 +264,52 @@ author={
       title     = {MatConvNet -- Convolutional Neural Networks for MATLAB},
       booktitle = {Proceeding of the {ACM} Int. Conf. on Multimedia},
       year      = {2015},
-  }
+}
+
+@article{schulman2017,
+   author = {{Schulman}, J. and {Wolski}, F. and {Dhariwal}, P. and {Radford}, A. and 
+	{Klimov}, O.},
+    title = "{Proximal Policy Optimization Algorithms}",
+  journal = {ArXiv e-prints},
+archivePrefix = "arXiv",
+   eprint = {1707.06347},
+ primaryClass = "cs.LG",
+ keywords = {Computer Science - Learning},
+     year = 2017,
+    month = jul,
+   adsurl = {http://adsabs.harvard.edu/abs/2017arXiv170706347S},
+  adsnote = {Provided by the SAO/NASA Astrophysics Data System}
+}
+
+@ARTICLE{hess2015,
+   author = {{Heess}, N. and {Wayne}, G. and {Silver}, D. and {Lillicrap}, T. and 
+	{Tassa}, Y. and {Erez}, T.},
+    title = "{Learning Continuous Control Policies by Stochastic Value Gradients}",
+  journal = {ArXiv e-prints},
+archivePrefix = "arXiv",
+   eprint = {1510.09142},
+ primaryClass = "cs.LG",
+ keywords = {Computer Science - Learning, Computer Science - Neural and Evolutionary Computing},
+     year = 2015,
+    month = oct,
+   adsurl = {http://adsabs.harvard.edu/abs/2015arXiv151009142H},
+  adsnote = {Provided by the SAO/NASA Astrophysics Data System}
+}
+
+
+@InProceedings{chou17,
+  title = 	 {Improving Stochastic Policy Gradients in Continuous Control with Deep Reinforcement Learning using the Beta Distribution},
+  author = 	 {Po-Wei Chou and Daniel Maturana and Sebastian Scherer},
+  booktitle = 	 {Proceedings of the 34th International Conference on Machine Learning},
+  pages = 	 {834--843},
+  year = 	 {2017},
+  editor = 	 {Doina Precup and Yee Whye Teh},
+  volume = 	 {70},
+  series = 	 {Proceedings of Machine Learning Research},
+  address = 	 {International Convention Centre, Sydney, Australia},
+  month = 	 {06--11 Aug},
+  publisher = 	 {PMLR},
+  pdf = 	 {http://proceedings.mlr.press/v70/chou17a/chou17a.pdf},
+  url = 	 {http://proceedings.mlr.press/v70/chou17a.html},
+  abstract = 	 {Recently, reinforcement learning with deep neural networks has achieved great success in challenging continuous control problems such as 3D locomotion and robotic manipulation. However, in real-world control problems, the actions one can take are bounded by physical constraints, which introduces a bias when the standard Gaussian distribution is used as the stochastic policy. In this work, we propose to use the Beta distribution as an alternative and analyze the bias and variance of the policy gradients of both policies. We show that the Beta policy is bias-free and provides significantly faster convergence and higher scores over the Gaussian policy when both are used with trust region policy optimization (TRPO) and actor critic with experience replay (ACER), the state-of-the-art on- and off-policy stochastic methods respectively, on OpenAI Gym’s and MuJoCo’s continuous control environments.}
+}
