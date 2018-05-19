@@ -102,12 +102,12 @@ To avoid extremely large action space was discrete action space substituted by c
 \begin{figure}[!h]
 \centering
 \includegraphics[scale=0.55]{fig/ddpg.pdf}
-\caption{DDPG architecture}
+\caption{Architecture of DDPG agent}
 \label{fig:ddpg}
 \end{figure}
 
 \pagebreak
-To explore action space correctly it is necessary to apply Ornstein-Uhlenbeck random process. When only normal distribution for action space noise is used, actions tend to converge into the corners very fast as in figure \ref{fig:expdiff}. For both actor and critic is used Adam optimizer with learning rates $\lambda_{a}$, $\lambda_{c}$. To stabilize critic learning is used target network. Further continuous agent uses prioritized experience replay.
+To explore action space correctly it is necessary to apply Ornstein-Uhlenbeck random process. When only Gaussian noise is added, actions tend to converge into the corners very fast as in figure \ref{fig:expdiff}. For both actor and critic is used Adam optimizer with learning rates $\lambda_{a}$, $\lambda_{c}$. To stabilize critic learning is used target network. Further continuous agent uses prioritized experience replay.
 
 \begin{figure}[H]
 \begin{subfigure}[h]{0.5\linewidth}
@@ -121,3 +121,8 @@ To explore action space correctly it is necessary to apply Ornstein-Uhlenbeck ra
 \caption{Difference between actions made by agents with different exploration methods}
 \label{fig:expdiff}
 \end{figure}
+
+\subsection{Stochastic planning agent}
+There is an obvious issue with deterministic actor. For efficient exploring of ground truth map is required to hit as many unique voxels as possible. Thus making several similar actions in a row is not a good strategy. Unfortunately, except first few timestamps of every drive, there is not a big difference between two subsequent observations. It is hard for neural network to make two different outputs for two similar inputs. Solution of this problem could be stochastic agent. Stochastic agent outputs parameters of beta distribution and preserves actor-critic framework. Architecture of stochastic agent is similar to DDPG from previous subsection. 
+
+\subsection{Comparison}

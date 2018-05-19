@@ -37,7 +37,7 @@ Q(S_t, A_t) \gets Q(S_t, A_t) + \lambda [R_{t} + \gamma \underset{A_{t+1}}{\max}
 Our policy here is to take action with maximal $Q$ value. That is called greedy policy. Obvious drawback of greedy policy is that it does not allow to explore the whole environment properly because an action with the highest $Q$ value is always chosen. A solution to this problem is sometimes take random action to explore the environment. This policy is often referred to as $\epsilon$-greedy policy.
 
 \begin{algorithm}
-\caption{$\epsilon$-greedy policy}
+\caption{$\epsilon$-greedy policy in pseudocode}
 \begin{algorithmic}[1]
 \Procedure{ChooseAction}{}
 \State $\epsilon \gets \epsilon \cdot \epsilon_d$
@@ -67,7 +67,7 @@ P(i) = \frac{p_i}{\sum_{j \in \mathcal{I}} p_j}
 where $\mathcal{I}$ is set of all experiences in the buffer. It is possible now to sample a batch of experiences for training using this probability. It removes correlation in the observation sequence and improves sample efficiency of DQN. It is feasible to store all experiences in a buffer sorted by priority but a more efficient implementation is a sum tree. That is a special case of binary tree, where value of each root is equal to the sum of its children values (see figure \ref{fig:sumtree}).
 \vspace{5mm}
 \begin{algorithm}
-\caption{Sum tree}
+\caption{Retrieve node from sum tree in pseudocode}
 \begin{algorithmic}[1]
 \Procedure{GetChild(parent, value)}{}
 \If {parent.left is None}
@@ -173,7 +173,7 @@ where $\alpha,\beta \in R^+_0$ are distribution parameters and $x \in [0, 1]$. $
 For reinforcement learning is suitable only $\alpha, \beta \geq 1$. This makes beta distribution concave and unimodal. It can be ensured by using softplus activation and add one at the end of actor network.
 
 \subsection{Deterministic policy gradients}
-Deep deterministic policy gradient (DDPG) is one of methods exploiting the Actor-Critic framework. Whereas stochastic actor predicts distribution parameters and sample an action, DDPG outputs the action directly. Silver \cite{silver2014} has shown that deterministic policy can outperform its stochastic counterparts. Disadvantage of this approach is that it needs additional strategy to ensure action space exploration. Exploration methods are discussed in subsection \ref{sec:exploration}.
+Deep deterministic policy gradient (DDPG) is one of methods exploiting the Actor-Critic framework. Whereas stochastic actor predicts distribution parameters and sample an action, DDPG outputs the action directly. Silver \cite{silver2014} has shown that deterministic policy can outperform its stochastic counterparts. Disadvantage of this approach is that it needs additional policy to ensure action space exploration. Exploration methods are discussed in subsection \ref{sec:exploration}.
 
 \subsection{Wolpetinger policy}
 Actor-Critic methods and DDPG work well in continuous action spaces, but there is a lot of usecases with large discrete action spaces, such as recommender systems or lidar planning. Wolpetinger policy is approach how to utilize continuous methods in discrete action space \cite{dulac2015}. Whole policy is illustrated in figure \ref{fig:wolpetinger}. Actor doesn't predict action directly, but it predicts so called proto-action $\tilde{A_t}$.
@@ -191,7 +191,7 @@ A_t = \underset{a \in \mathcal{A}_{knn}}{\text{argmax}} Q^\omega(S_t, a)
 \begin{figure}[!h]
 \centering
 \includegraphics[scale=0.35]{fig/wolpetinger-policy.png}
-\caption{Wolpetinger policy can be described in 3 steps. \textbf{1)} Actor outputs an action \textbf{2)} The $K$ nearest valid actions are found \textbf{3)} Choose the action which is assessed as the best by the critic}
+\caption[Wolpetinger policy illustration] {Wolpetinger policy can be described in 3 steps. \textbf{1)} Actor outputs an action \textbf{2)} The $K$ nearest valid actions are found \textbf{3)} Choose the action which is assessed as the best by the critic}
 \label{fig:wolpetinger}
 \end{figure}
 
