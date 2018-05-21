@@ -3,9 +3,9 @@ Firstly, an environment where an agent can operate must be defined. The environm
 \begin{equation}
 G_t = \sum\limits_{k=0}^{\infty}\gamma^k R_{t+k}
 \end{equation}
-where $\gamma \in [0,1]$ is discount factor. RL methods define how experiences from interacting with the environment will change the policy.  The major issue is that maximizing immediate reward is often not an effective approach to maximize an expected sum of discounted rewards. This greedy policy can take the agent into a very disadvantageous state. Thus, the agent must take into account future states and rewards. This is done by value function $V_pi(S_t)$ which assesses how advantageous is being in state $S_t$ with policy $\pi$.
+where $\gamma \in [0,1]$ is discount factor. RL methods define how experiences from interacting with the environment will change the policy.  The major issue is that maximizing immediate reward is often not an effective approach to maximize an expected sum of discounted rewards. This greedy policy can take the agent into a very disadvantageous state. Thus, the agent must take into account future states and rewards. This is done by value function $V_{\pi}(S_t)$ which assesses how advantageous is being in state $S_t$ with policy $\pi$.
 \begin{equation}
-V_\pi(S_t) \doteq  \mathbf{E}_\pi[G_t | S_t].
+V_{\pi}(S_t) \doteq  \mathbf{E}_\pi[G_t | S_t].
 \end{equation}
 Optimal policy $\pi^*$ is then defined as
 \begin{equation}
