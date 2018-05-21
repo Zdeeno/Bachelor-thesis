@@ -10,9 +10,9 @@ c &< 0 \quad \text{empty voxel.}
 The environment also offers visualization of actions using Mayavi \cite{mayavi2011} and ASCII art. Agents use neural networks as function estimators, which are handled by Tensorflow \cite{tensorflow2015} and Keras \cite{keras2015}.
 
 \subsection{Environments}
-Lidar-gym implements several environments, which follow the same template with different sizes. Observation space is a local cutout of voxel map, which provides occupancies from sensor's sparse measurements. The sensor is located in the quarter of x-axis and half of y-axis and z-axis of a local cutout. Action space is divided into two parts. First part is dense voxel map reconstructed from observations (sparse measurements). The second part of action space are directions of measuring rays. Each ray has own azimuth and elevation. Environment expects directions in the format of a 2D array of booleans, where true means fired ray. Environments reward is negative logistic loss $-L$ \eqref{eq:loglos}. Lidar-gym defines environments with parameters described in table \ref{tab:envs}.
+Lidar-gym implements several environments, which follow the same template with different sizes. Observation space is a local cutout of voxel map, which provides occupancies from sensor's sparse measurements. The sensor is located in the quarter of x-axis and half of y-axis and z-axis of a local cutout. Action space is divided into two parts. First part is dense voxel map reconstructed from observations (sparse measurements). The second part of action space are directions of measuring rays. Each ray has own azimuth and elevation. Environment expects directions in the format of a 2D array of booleans, where true means fired ray. Environments reward is negative logistic loss $-L$ \eqref{eq:loglos}. Lidar-gym defines environments, with parameters described in table \ref{tab:envs}, and visualized in figure \ref{fig:visualization}. 
 
-\renewcommand{\thefootnote}{\fnsymbol{footnote}}
+\clearpage
 
 \begin{table}[h]
 \centering
@@ -27,9 +27,17 @@ Number of rays          & 200                          & 50                     
 Voxel size [m] & 0.2 & 0.4 & 0.8 \\ \hline
 Episode training time [min]\footnotemark{} & 120 & 15 & 1.5 \\ \hline
 \end{tabular}
-\caption{Environment description}
+\caption{Description of environments}
 \label{tab:envs}
 \end{table}
+
+\begin{figure}[!h]
+\includegraphics[width=1\linewidth]{fig/large.png}
+\includegraphics[width=1\linewidth]{fig/toy.png}
+\caption[Environment visualization.]{Visualization of two environments: Top - Large, bottom - Toy. Ground truth map is green, reconstructed map is in grey palette, sensor position and rays are red.}
+\label{fig:visualization}
+\end{figure}
+\renewcommand{\thefootnote}{\fnsymbol{footnote}}
 \footnotetext[1]{Using GPU Nvidia 1080Ti.}
 \clearpage
 Due to the high time complexity were all experiments conducted in toy environment. RL agents need significantly more training steps than supervised agents. In OpenAI baselines, \cite{openai2017} are RL agents trained for over million timestamps. One drive in Kitti dataset has on average 200 timestamps. All agents were trained and evaluated on different drives from city part of the dataset.
@@ -67,28 +75,11 @@ q(S_t, A_t) &= \max\limits_{A_t}^K Q^\theta(S_t, A_t)\\
 \end{align}
 where $\overline{q}$ is average $Q$ value over $K$ actions with maximal $Q$ values. DQN agent implements all available features described in the theoretical part of this thesis as Prioritized experience replay, target network, and double Q learning. Exploration is ensured by action space noise. Parameter values of agent are shown in table \ref{tab:dqlparam} and neural network architecture in figure \ref{fig:dqn}. For gradient descent is used Adam optimizer with learning rate $\lambda$.
 
-\begin{table}[H]
-  \centering
-  \begin{tabular}{*{2}{c}}
-    \toprule
-    Parameter & Value \\
-    \midrule
-    $\gamma$ & X \\
-    $\lambda$ & X \\
-    $\tau$ & X \\
-    $\epsilon_d$ & X \\
-    \bottomrule
-  \end{tabular}
-  \caption{Parameters of DQL agent}
-  \label{tab:dqlparam}
-\end{table}
-\pagebreak
-
-\vspace{3mm}
+\clearpage
 \begin{figure}[!h]
 \centering
 \includegraphics[scale=0.6]{fig/dql.pdf}
-\caption{DQN architecture}
+\caption{DQN architecture.}
 \label{fig:dqn}
 \end{figure}
 
@@ -102,7 +93,7 @@ The discrete action output was substituted by continuous action, which is then m
 \begin{figure}[!h]
 \centering
 \includegraphics[scale=0.55]{fig/ddpg.pdf}
-\caption[Architecture of DDPG agent]{Architecture of the actor is on the left side and critic is on the right side. In the middle can be seen shared inputs and outputs.}
+\caption[DDPG architecture]{Architecture of the actor is on the left side and critic is on the right side. In the middle can be seen shared inputs and outputs.}
 \label{fig:ddpg}
 \end{figure}
 
@@ -118,11 +109,12 @@ To explore action space correctly, it is necessary to apply Ornstein-Uhlenbeck r
 \includegraphics[width=\linewidth]{fig/right_action.eps}
 \end{subfigure}
 \captionsetup{width=1\textwidth}
-\caption[Difference between actions made by agents with different exploration methods]{Difference between actions made by agents with different exploration methods. Left figure is an example of action made by an agent with Gaussian noise used for exploration. The action in the right figure is taken by agent trained using Ornstein-Uhlenbeck noise.}
+\caption[Difference between exploration methods]{Difference between actions made by agents with different exploration methods. Left figure is an example of action made by an agent with Gaussian noise used for exploration. The action in the right figure is taken by agent trained using Ornstein-Uhlenbeck noise.}
 \label{fig:expdiff}
 \end{figure}
 
 \subsection{Stochastic planning agent}
-There is an obvious issue with the deterministic actor. For efficient exploring of ground truth map is required to hit as many unique voxels as possible. Thus making several similar actions in a row is not a good strategy. Unfortunately, except first few timestamps of every drive, there is not a big difference between two subsequent observations. It is hard for a neural network to make two different outputs for two similar inputs. The solution to this problem could be a stochastic agent. Stochastic agent outputs parameters of beta distribution and preserves actor-critic framework. The architecture of stochastic agent is similar to DDPG from the previous subsection. 
+There is an obvious issue with the deterministic actor. For efficient exploring of ground truth map is required to hit as many unique voxels as possible. Thus making several similar actions in a row is not a good strategy. Unfortunately, except first few timestamps of every drive, there is not a big difference between two subsequent observations. It is hard for a neural network to make two different outputs for two similar inputs. The solution to this problem could be a stochastic agent. Stochastic agent outputs parameters of beta distribution and preserves actor-critic framework. The architecture of stochastic agent is similar to DDPG from the previous subsection, only difference is that agent now outputs only two values - distribution parameters. Action is then sampled with distribution probabilities.
 
-\subsection{Comparison}
+\clearpage
+\subsection{Comparison of methods}

@@ -16,7 +16,7 @@ In the past agents used big tables to estimate the value function. That is possi
 \begin{figure}[!h]
 \centering
 \includegraphics[scale=0.3]{fig/RL-concept.png}
-\caption{RL concept}
+\caption[RL concept]{RL concept. Source - \cite{sutton2012}.}
 \label{fig:rlconcept}
 \end{figure}
 \pagebreak
@@ -61,17 +61,14 @@ p = (|\delta_t | + \eta)^\rho
 \end{equation}
 where $\rho$ indicates how much we prefer experiences with higher priority and $\eta \ll 1$ is a constant which helps to avoid priorities very close to zero. Considering a greedy selection would abandon experiences with low priority, a better approach is to choose experience $i \in \mathcal{I}$ with probability:
 \begin{equation}
-P(i) = \frac{p_i}{\sum_{j \in \mathcal{I}} p_j},
+P(i) = \frac{p_i}{\sum\limits_{j \in \mathcal{I}} p_j},
 \end{equation}
-where $\mathcal{I}$ is set of all experiences in the buffer. It is possible now to sample a batch of experiences for training using this probability. It removes correlation in the observation sequence and improves sample efficiency of DQN. It is feasible to store all experiences in a buffer sorted by priority, but a more efficient implementation is a sum tree. That is a special case of a binary tree, where the value of each root is equal to the sum of its children values (see figure \ref{fig:sumtree}).
-\vspace{5mm}
+where $\mathcal{I}$ is set of all experiences in the buffer. It is possible now to sample a batch of experiences for training using this probability. It removes correlation in the observation sequence and improves sample efficiency of DQN. It is feasible to store all experiences in a buffer sorted by priority, but a more efficient implementation is a sum tree. That is a binary tree, where the value of each root is equal to the sum of its children values (see figure \ref{fig:sumtree}).
 \begin{algorithm}
 \caption{Retrieve node from sum tree in pseudocode}
 \begin{algorithmic}[1]
 \Procedure{GetChild(parent, value)}{}
-\If {parent.left is None}
-\State \Return parent
-\EndIf
+\If {parent.left is None} \Return parent \EndIf
 \If {value $\leq$ parent.left.value} 
 \State \Return GetChild(parent.left, value)
 \Else 
@@ -80,11 +77,10 @@ where $\mathcal{I}$ is set of all experiences in the buffer. It is possible now 
 \EndProcedure
 \end{algorithmic}
 \end{algorithm}
-\clearpage
 \begin{figure}[H]
 \centering
-\includegraphics[scale=0.55]{fig/sumtree.pdf}
-\caption{Sum tree example}
+\includegraphics[scale=0.5]{fig/sumtree.pdf}
+\caption[Sum tree]{Simple example of sum tree.}
 \label{fig:sumtree}
 \end{figure}
 \clearpage
@@ -131,7 +127,7 @@ Thanks to predicting action directly, we gain the possibility to predict in cont
 \begin{figure}[H]
 \centering
 \includegraphics[scale=0.55]{fig/actor-critic.png}
-\caption{Actor-Critic framework}
+\caption[Actor-Critic framework]{Actor-Critic framework. Source - \cite{sutton2012}.}
 \label{fig:actorcritic}
 \end{figure}
 \clearpage
@@ -165,7 +161,7 @@ where $\alpha,\beta \in R^+_0$ are distribution parameters and $x \in [0, 1]$. $
 \begin{figure}[H]
 \centering
 \includegraphics[scale=0.2]{fig/beta.png}
-\caption{Probability density of beta distribution}
+\caption[Probability density of beta distribution]{Probability density of beta distribution. Source - \cite{chou17}.}
 \label{fig:beta}
 \end{figure}
 
@@ -190,7 +186,7 @@ A_t = \underset{a \in \mathcal{A}_{knn}}{\text{argmax}} Q^\omega(S_t, a)
 \begin{figure}[!h]
 \centering
 \includegraphics[scale=0.35]{fig/wolpetinger-policy.png}
-\caption[Wolpetinger policy illustration] {Wolpetinger policy can be described in 3 steps. \textbf{1)} Actor outputs an action \textbf{2)} The $K$ nearest valid actions are found \textbf{3)} Choose the action which is assessed as the best by the critic}
+\caption[Wolpetinger policy illustration] {Wolpetinger policy can be described in 3 steps. \textbf{1)} Actor outputs an action \textbf{2)} The $K$ nearest valid actions are found \textbf{3)} Choose the action which is assessed as the best by the critic. Source - \cite{dulac2015}.}
 \label{fig:wolpetinger}
 \end{figure}
 
@@ -223,6 +219,6 @@ where $\nu, \phi \in [0, 1]$ are constants of the random process and $\nu$ is me
 \begin{figure}[H]
 \centering
 \includegraphics[scale=0.5]{fig/perturbations.png}
-\caption{Left - action space noise, Right - parameter space noise}
+\caption[Exploration noise types]{Left - action space noise, Right - parameter space noise. Source - \cite{plappert2017}.}
 \label{fig:exploration}
 \end{figure}
