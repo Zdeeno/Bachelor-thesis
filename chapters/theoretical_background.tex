@@ -38,7 +38,7 @@ Our policy here is to take action with maximal $Q$ value. That is called greedy 
 \begin{algorithm}
 \caption{$\epsilon$-greedy policy in pseudocode}
 \begin{algorithmic}[1]
-\Procedure{ChooseAction}{}
+\Function{ChooseAction}{}
 \State $\epsilon \gets \epsilon \cdot \epsilon_d$
 \If {$\epsilon >$ random $\in (0,1)$}
 \State action $\gets$ random $\in \mathcal{A}$
@@ -46,7 +46,7 @@ Our policy here is to take action with maximal $Q$ value. That is called greedy 
 \State action $\gets$ $\underset{A_t}{\max} Q(S_t, A_t)$
 \EndIf
 \State \Return action
-\EndProcedure
+\EndFunction
 \end{algorithmic}
 \end{algorithm}
 
@@ -63,18 +63,18 @@ where $\rho$ indicates how much we prefer experiences with higher priority and $
 \begin{equation}
 P(i) = \frac{p_i}{\sum\limits_{j \in \mathcal{I}} p_j},
 \end{equation}
-where $\mathcal{I}$ is set of all experiences in the buffer. It is possible now to sample a batch of experiences for training using this probability. It removes correlation in the observation sequence and improves sample efficiency of DQN. It is feasible to store all experiences in a buffer sorted by priority, but a more efficient implementation is a sum tree. That is a binary tree, where the value of each root is equal to the sum of its children values (see figure \ref{fig:sumtree}).
+where $\mathcal{I}$ is set of all experiences in the buffer. It is possible now to sample a batch of experiences for training using this probability. It removes correlation in the observation sequence and improves sample efficiency of DQN. It is feasible to store all experiences in a buffer sorted by priority, but a more efficient implementation is a sum tree. That is a binary tree, where the value of each root is equal to the sum of its children values (see figure \ref{fig:sumtree}). Example of usage is in algorithm \ref{alg:sumtree}.
 \begin{algorithm}
 \caption{Retrieve node from sum tree in pseudocode}
-\begin{algorithmic}[1]
-\Procedure{GetChild(parent, value)}{}
+\begin{algorithmic}[1]\label{alg:sumtree}
+\Function{GetChild(parent, value)}{}
 \If {parent.left is None} \Return parent \EndIf
 \If {value $\leq$ parent.left.value} 
 \State \Return GetChild(parent.left, value)
 \Else 
 \State \Return GetChild(parent.right, value - parent.left.value)
 \EndIf
-\EndProcedure
+\EndFunction
 \end{algorithmic}
 \end{algorithm}
 \begin{figure}[H]
@@ -116,7 +116,7 @@ Double DQN outperforms DQN in terms of value accuracy and in terms of policy qua
 
 \clearpage
 \section{Policy gradient}
-By this section, the goal of the neural network was predicting values by which we determined the policy. In policy gradient method neural network approximates the policy itself. 
+By this section, the goal of the neural network was predicting values by which the policy was determined. In policy gradient method neural network approximates the policy itself. 
 \begin{equation}
 \theta_{t+1} = \theta_t + \lambda \widehat{\nabla J(\theta_t)}
 \end{equation}
@@ -156,7 +156,7 @@ On the other hand, obvious drawback of the normal distribution is that there is 
 \begin{equation}
 f(x;\alpha, \beta) = \frac{\Gamma(\alpha + \beta)}{\Gamma(\alpha)\Gamma(\beta)}x^{\alpha-1}(1-x)^{\beta-1},
 \end{equation}
-where $\alpha,\beta \in R^+_0$ are distribution parameters and $x \in [0, 1]$. $\Gamma$ is Euler's gamma function, which extends factorial into the set of real numbers. Beta distribution is shown in the figure \ref{fig:beta}.
+where $\alpha,\beta \in R^+_0$ are distribution parameters and $x \in [0, 1]$. $\Gamma$ is Euler's gamma function, which extends factorial into the set of real numbers. Beta distribution is shown in the figure \ref{fig:beta}. The biggest advantage is that Beta distribution is bounded by definition and does not need additional clipping.
 
 \begin{figure}[H]
 \centering
@@ -165,7 +165,7 @@ where $\alpha,\beta \in R^+_0$ are distribution parameters and $x \in [0, 1]$. $
 \label{fig:beta}
 \end{figure}
 
-For reinforcement learning is suitable only $\alpha, \beta \geq 1$. That makes beta distribution concave and unimodal. It can be ensured by using softplus activation and adding one at the end of actor-network.
+For reinforcement learning is suitable only $\alpha, \beta \geq 1$. That makes beta distribution concave and unimodal. This can be ensured by using softplus activation and adding one at the end of actor-network.
 
 \subsection{Deterministic policy gradients}
 Deep deterministic policy gradient (DDPG) is one of the methods for exploiting the Actor-Critic framework. Whereas stochastic actor predicts distribution parameters and samples an action DDPG outputs the action directly. Silver \cite{silver2014} has shown that deterministic policy can outperform its stochastic counterparts. A disadvantage of this approach is that it needs an additional policy to ensure action space exploration. Exploration methods are discussed in subsection \ref{sec:exploration}.

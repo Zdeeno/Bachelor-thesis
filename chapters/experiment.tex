@@ -12,8 +12,6 @@ The environment also offers visualization of actions using Mayavi \cite{mayavi20
 \subsection{Environments}
 Lidar-gym implements several environments, which follow the same template with different sizes. Observation space is a local cutout of voxel map, which provides occupancies from sensor's sparse measurements. The sensor is located in the quarter of x-axis and half of y-axis and z-axis of a local cutout. Action space is divided into two parts. First part is dense voxel map reconstructed from observations (sparse measurements). The second part of action space are directions of measuring rays. Each ray has own azimuth and elevation. Environment expects directions in the format of a 2D array of booleans, where true means fired ray. Environments reward is negative logistic loss $-L$ \eqref{eq:loglos}. Lidar-gym defines environments, with parameters described in table \ref{tab:envs}, and visualized in figure \ref{fig:visualization}. 
 
-\clearpage
-
 \begin{table}[h]
 \centering
 \begin{tabular}{|c||c|c|c|} 
@@ -58,7 +56,7 @@ L(Y, \hat{Y}) = \sum\limits_i w_i \log(1 + \exp(Y_i \hat{Y_i}))
 \end{equation}
 where $w$ are weights which balance importance of occupied and unoccupied voxels.
 \pagebreak
-Unfortunately, a naive implementation of this loss function is computationally inconvenient and often cause numerical issues as underflow or overflow. To stabilize training following the modified loss was used \cite{matconvnet2015}.
+Unfortunately, a naive implementation of this loss function is computationally inconvenient and often cause numerical issues as underflow or overflow. To stabilize training following modified loss was used \cite{matconvnet2015}.
 \begin{align} 
 \begin{split}
 a_i &= Y_i \hat{Y_i} \\
@@ -66,12 +64,14 @@ b_i &= \max(0, a_i) \\
 L &= \sum\limits_i w_i (b_i + \log(\exp(-b_i) + \exp(a_i-b_i))).
 \end{split}
 \end{align}
-At first, we train mapping agent with random ray planning. Reconstructions of the supervised agent are then used for training RL planning agents and after that is mapping agent retrained with RL agent picking the rays.
+At first, supervised mapping agent with random ray planning, is trained. Reconstructions of the supervised agent are then used for training RL planning agents and after that is mapping agent retrained with RL agent picking the rays.
 \subsection{Discrete planning agent}
 Insomuch as the input of the environment for a direction of the rays is 2D binary array, first try is to use a discrete agent. DQN is the most used option for discrete action space, but in this use case, it requires some tweaks. Note that number of possible actions is extremely large. Even in toy environment it is $40\times30 \choose 15$ $\approx 10^{34}$ of actions. Thus it is necessary to emphasize on action space exploration. Further arises the problem with $\epsilon$-greedy policy, because we are unable to process all possible actions and pick one with the biggest Q-value. To solve this issue is considered one ray as an action and for $K$ rays is TD from \eqref{eq:qlearn} now computed as:
-\begin{align}
+\begin{align} \label{eq:dql}
+\begin{split}
 q(S_t, A_t) &= \max\limits_{A_t}^K Q^\theta(S_t, A_t)\\
 \delta_t &= R_t + \gamma \overline{q}(S_{t+1}, A_{t+1}) - \overline{q}(S_t, A_t)
+\end{split}
 \end{align}
 where $\overline{q}$ is average $Q$ value over $K$ actions with maximal $Q$ values. DQN agent implements all available features described in the theoretical part of this thesis as Prioritized experience replay, target network, and double Q learning. Exploration is ensured by action space noise. Parameter values of agent are shown in table \ref{tab:dqlparam} and neural network architecture in figure \ref{fig:dqn}. For gradient descent is used Adam optimizer with learning rate $\lambda$.
 
@@ -114,7 +114,47 @@ To explore action space correctly, it is necessary to apply Ornstein-Uhlenbeck r
 \end{figure}
 
 \subsection{Stochastic planning agent}
-There is an obvious issue with the deterministic actor. For efficient exploring of ground truth map is required to hit as many unique voxels as possible. Thus making several similar actions in a row is not a good strategy. Unfortunately, except first few timestamps of every drive, there is not a big difference between two subsequent observations. It is hard for a neural network to make two different outputs for two similar inputs. The solution to this problem could be a stochastic agent. Stochastic agent outputs parameters of beta distribution and preserves actor-critic framework. The architecture of stochastic agent is similar to DDPG from the previous subsection, only difference is that agent now outputs only two values - distribution parameters. Action is then sampled with distribution probabilities.
+There is an obvious issue with the deterministic actor. For efficient exploring of ground truth map is required to hit as many unique voxels as possible. Thus making several similar actions in a row is not a good strategy. Unfortunately, except first few timestamps of every drive, there is not a big difference between two subsequent observations. It is hard for a neural network to make two different outputs for two similar inputs. The solution to this problem could be a stochastic agent. Stochastic agent outputs parameters of beta distribution and preserves actor-critic framework. The architecture of stochastic agent is similar to DDPG from the previous subsection, only difference is that agent now outputs just two values - distribution parameters. Action is then sampled with distribution probabilities. Stochastic actor output can be seen in figure \ref{fig:stochaction}.
 
 \clearpage
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\linewidth]{fig/betapdf.eps}
+\caption[Example of stochastic actor output]{Probability density of picking ray, with specific azimuth and elevation.}
+\label{fig:stochaction}
+\end{figure}
+
 \subsection{Comparison of methods}
+Several methods were tried. Unfortunately most of the methods are not doing well in Lidar-gym environment. The worst performance had the DQL. That is probably caused by an extremely large set of possible actions. Workaround made in formula \eqref{eq:dql}, did not help agent to converge. Continuous DDPG agent also did not converge successfully. It is  hard for DDPG agent to change direction of rays efficiently in subsequent timestamps and it often makes several same actions in a row, that degrades performance a lot. Only stochastic agent was able to outperform a random agent. Summary of agents performances is made in figure \ref{fig:roc}. It turns out that it is very difficult to get satisfying results. Stochastic agent converge, but it does not use any kind of advanced strategy. Action space of this agent does not even allow him to do any sophisticated action. Therefore were also conducted experiments with extended stochastic agent, which have used beta distribution for each ray separately, but with no significant success. Another advantage of simple stochastic agent is its scalability. This agent can be adjusted to the large environment much easier than any other used agent. Parameters used for these agents are described in table \ref{tab:params}.
+
+\clearpage
+
+\begin{table}[h!]
+  \centering
+  \begin{tabular}{*{2}{c}}
+    \toprule
+    Parameter & Value \\
+    \midrule
+    $\gamma$ & 0.09 \\
+    $\lambda_{critic}$ & 0.001 \\
+    $\lambda_{actor}$ & 0.0001 \\
+    $\tau$ & 0.01 \\
+    Memory size & 4096 \\
+    Batch size & 8 \\
+    \bottomrule
+  \end{tabular}
+  \caption[Learning parameters]{Parameters used for learning.}
+  \label{tab:params}
+\end{table}
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=1\linewidth]{fig/roc.eps}
+\caption[ROC curves comparison]{False positives were calculated using ground truth map and true positives using all voxels, which could be possibly hit by sensor. Five different evaluations are displayed for non-deterministic agents.}
+\label{fig:roc}
+\end{figure}
+
+\clearpage
+
+

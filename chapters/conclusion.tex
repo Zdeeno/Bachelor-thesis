@@ -1,3 +1,6 @@
 \section{Conclusion}
+At the beginning of the thesis was defined the concept of reinforcement learning. Further, methods as DQL and DDPG were discussed. Also several methods which helps neural networks to converge were described. The experiment focused on training planning agents for choosing rays. All deterministic agents performed poorly in this specific task. Stochastic agent successfully outperformed random planner. Action space size and time-complexity were two major blockers during the training. Any of trained RL agents can not compete with prioritized greedy planner proposed by Zimmermann et al. \cite{zimmermann2017}.
 
-BLAH BLAH BLAH
+
+\subsection{Future work}
+Experiment which would be worth conducting is an agents, which stands between simple and extended stochastic agent. Extended stochastic agent has action space consisting of 60 real numbers (15 rays with azimuth and elevation and for each alpha, beta parameters). That is very likely too much for network architecture used by agent. On the other hand, when only one distribution is outputted for all rays, it does not allow agent to create advanced policies. Solution could be to output for example three different distributions and each use for five rays. Another improvement could be achieved by adjusting neural network architecture. Especially splitting and merging of neural network, can have significant impact on performance. 

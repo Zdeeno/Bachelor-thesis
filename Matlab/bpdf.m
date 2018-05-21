@@ -1,12 +1,12 @@
 clear all;
 [X,Y] = meshgrid(0:0.001:1);
-azalpha = 2;
-azbeta = 4;
-elalpha = 4;
-elbeta = 8;
+azalpha = 1.5;
+azbeta = 1.5;
+elalpha = 4.2;
+elbeta = 3;
 
-x = betapdf(X, azalpha, azbeta);
-y = betapdf(X, elalpha, elbeta);
+x = betapdf(X, azbeta, azalpha);
+y = betapdf(X, elbeta, elalpha);
 z = (x + y')/2;
 
 fov = [pi*(2/3), pi/2];
@@ -19,7 +19,7 @@ xlabel('azimuth [rad]')
 ylabel('elevation [rad]')
 zlabel('probability density')
 title('Probability density over FOV')
-hcb = colorbar
+hcb = colorbar;
 colorTitleHandle = get(hcb, 'Title');
 titleString = 'probability density';
 set(colorTitleHandle ,'String', titleString);
