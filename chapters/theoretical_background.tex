@@ -1,9 +1,9 @@
 \section{RL basics}
-Firstly, an environment where an agent can operate must be defined. The environment can be described as Markov decision process, where $S_t \in \mathcal{S}$ is a state from a set of possible states $\mathcal{S}$ in which environment is located in time $t$. An agent can usually observe the state of the environment and take action accordingly. An action is a probabilistic transition between states. Every action $A_t \in \mathcal{A}$ moves the environment from $S_t$ to $S_{t+1}$. The environment evaluates every action and returns appropriate reward $R_t$ (figure \ref{fig:rlconcept}). In RL set $\mathcal{A}$ is often called action space and set $\mathcal{S}$ observation space. The main goal of the agent is to find policy $\pi$ which maximizes expected return. Return $G_t$ is a sum of discounted future rewards \cite{sutton2012}.
+Firstly, an environment where an agent can operate must be defined. The environment can be described as Markov decision process (MDP), where $S_t \in \mathcal{S}$ is a state from a set of possible states $\mathcal{S}$ in which environment is located in time $t$. In environments with observable MDP, an agent can observe the state of the environment and take action accordingly. An action is a probabilistic transition between states. Every action $A_t \in \mathcal{A}$ moves the environment from $S_t$ to $S_{t+1}$. The environment evaluates every action and returns appropriate reward $R_t$ (Figure \ref{fig:rlconcept}). In RL set $\mathcal{A}$ is often called action space and set $\mathcal{S}$ observation space. Return $G_t$ is a sum of discounted future rewards \cite{sutton2012}.
 \begin{equation}
 G_t = \sum\limits_{k=0}^{\infty}\gamma^k R_{t+k}
 \end{equation}
-where $\gamma \in [0,1]$ is discount factor. RL methods define how experiences from interacting with the environment will change the policy.  The major issue is that maximizing immediate reward is often not an effective approach to maximize an expected sum of discounted rewards. This greedy policy can take the agent into a very disadvantageous state. Thus, the agent must take into account future states and rewards. This is done by value function $V_{\pi}(S_t)$ which assesses how advantageous is being in state $S_t$ with policy $\pi$.
+where $\gamma \in [0,1]$ is discount factor. RL methods define how experience from interacting with the environment will change the policy. The major issue is that maximizing immediate reward is often not an effective approach to maximize the sum of discounted rewards $G_t$. This greedy policy can take the agent into a very disadvantageous state. Thus, the agent must take into account future states and rewards. The goal of the agent is to find policy $\pi$ which maximizes expected return. The agent use the value function $V_{\pi}(S_t)$ which assesses how advantageous is being in state $S_t$ with policy $\pi$.
 \begin{equation}
 V_{\pi}(S_t) \doteq  \mathbf{E}_\pi[G_t | S_t].
 \end{equation}
@@ -12,7 +12,7 @@ Optimal policy $\pi^*$ is then defined as
 \pi^*(S_t) \doteq \max\limits_\pi V_\pi(S_t),
 \end{equation}
 for all $S_t \in \mathcal{S}$.
-In the past agents used big tables to estimate the value function. That is possible in environments with small action and observation spaces but is very memory consuming for larger environments and even impossible for continuous action or observation space. Therefore, modern methods use neural networks as function estimators.
+In the past, agents used big tables to estimate the value function. That is possible in environments with small action and observation spaces but is very memory consuming for larger environments and even impossible for continuous action or observation space. Therefore, modern methods use neural networks as function estimators.
 \begin{figure}[!h]
 \centering
 \includegraphics[scale=0.3]{fig/RL-concept.png}
@@ -22,18 +22,19 @@ In the past agents used big tables to estimate the value function. That is possi
 \pagebreak
 
 \subsection{Temporal difference learning}
-Temporal difference (TD) learning combines the ideas of Monte Carlo methods and dynamic programming. It can learn directly from experience obtained by interactions with an environment without any prior knowledge of the said environment. TD learning is done by following assignment in each timestamp \cite{sutton2012}
-\begin{equation}
-V(S_t) \gets V(S_t) + \lambda [R_{t} + \gamma V(S_{t+1}) - V(S_t)]
-\end{equation}
-where $\lambda \in \mathbb{R}^+$ is step size.
+Temporal difference (TD) learning combines the ideas of Monte Carlo methods and dynamic programming. It can learn directly from the experience obtained by interactions with the environment without any prior knowledge of the said environment. TD learning is done by following assignment in each timestamp \cite{sutton2012}
+\begin{align}
+\delta_t = R_{t} + \gamma V(S_{t+1}) - V(S_t)
+V(S_t) \gets V(S_t) + \lambda \delta_t
+\end{align}
+where $\delta_t$ i the TD and $\lambda \in \mathbb{R}^+$ is step size.
 
 \subsection{Q-learning}
 Q-learning is a type of TD learning developed by Watkins \cite{watkins1992}. The state value $V$ from the previous subsection is replaced by $Q$ value, which refers to a quality of action in a particular state instead of the quality of the state itself. When we rewrite TD learning (4) to Q-learning we get:
 \begin{equation}
 Q(S_t, A_t) \gets Q(S_t, A_t) + \lambda [R_{t} + \gamma \underset{A_{t+1}}{\max} Q(S_{t+1}, A_{t+1}) - Q(S_t, A_t)].
 \end{equation}
-Our policy here is to take action with maximal $Q$ value. That is called greedy policy. An obvious drawback of greedy policy is that it does not allow to explore the whole environment properly because an action with the highest $Q$ value is always chosen. A solution to this problem is sometimes to take random action to explore the environment. This policy is often referred to as $\epsilon$-greedy policy.
+Our policy here is to take action with maximal $Q$ value. That is called greedy policy. An obvious drawback of greedy policy is that it does not allow to explore the whole environment properly because an action with the highest $Q$ value is always chosen. A solution to this problem is to make sometimes a random action, and explore the environment. This policy is often referred to as $\epsilon$-greedy policy.
 
 \begin{algorithm}
 \caption{$\epsilon$-greedy policy in pseudocode}
@@ -50,23 +51,24 @@ Our policy here is to take action with maximal $Q$ value. That is called greedy 
 \end{algorithmic}
 \end{algorithm}
 
-It is common to set $\epsilon = 1$ at the beginning of the training and decay rate $\epsilon_d$ close to one. The general idea behind this policy assumes that it is needed to explore an environment first and then exploit agents experience.
+It is common to set $\epsilon = 1$ at the beginning of the training and decay rate $\epsilon_d$ close to one. The general idea behind this policy assumes that it is needed to explore the environment first and then exploit agent's experience.
 
 \clearpage
 
 \subsection{Prioritized experience replay}
-Experience replay is biologically inspired mechanism introduced by Schaul et al. \cite{schaul2015} which stores all experiences (specifically: $S_t$, $A_t$, $R_{t}$, $S_{t+1}$) into a buffer and assigns priority to every experience. The main idea is that experiences with high TD should have higher priority. It is thus necessary to calculate priority $p$ from TD error:
+Prioritized experience replay is biologically inspired mechanism introduced by Schaul et al. \cite{schaul2015} which stores all experience (specifically: $S_t$, $A_t$, $R_{t}$, $S_{t+1}$) in a buffer and assigns priority to every experience. The main idea is that experience with high TD should have higher priority. It is thus necessary to calculate priority $p$ from TD error:
 \begin{equation}
 p = (|\delta_t | + \eta)^\rho
 \end{equation}
-where $\rho$ indicates how much we prefer experiences with higher priority and $\eta \ll 1$ is a constant which helps to avoid priorities very close to zero. Considering a greedy selection would abandon experiences with low priority, a better approach is to choose experience $i \in \mathcal{I}$ with probability:
+where $\rho$ indicates how much we prefer experience with higher priority and $\eta \ll 1$ is a constant which helps to avoid priorities very close to zero. Considering a greedy selection would abandon experience with low priority, a better approach is to choose experience $i \in \mathcal{I}$ with probability:
 \begin{equation}
 P(i) = \frac{p_i}{\sum\limits_{j \in \mathcal{I}} p_j},
 \end{equation}
-where $\mathcal{I}$ is set of all experiences in the buffer. It is possible now to sample a batch of experiences for training using this probability. It removes correlation in the observation sequence and improves sample efficiency of DQN. It is feasible to store all experiences in a buffer sorted by priority, but a more efficient implementation is a sum tree. That is a binary tree, where the value of each root is equal to the sum of its children values (see figure \ref{fig:sumtree}). Example of usage is in algorithm \ref{alg:sumtree}.
+where $\mathcal{I}$ is set of all experience in the buffer. It is possible now to sample a batch of experience for training using this probability. It removes correlation in the observation sequence and improves sample efficiency of DQN. It is feasible to store all experience in a buffer sorted by priority, but a more efficient implementation is a sum tree. That is a binary tree, where the value of each root is equal to the sum of its children values (see Figure \ref{fig:sumtree}). Example of usage is in algorithm \ref{alg:sumtree}.
 \begin{algorithm}
 \caption{Retrieve node from sum tree in pseudocode}
-\begin{algorithmic}[1]\label{alg:sumtree}
+\label{alg:sumtree}
+\begin{algorithmic}[1]
 \Function{GetChild(parent, value)}{}
 \If {parent.left is None} \Return parent \EndIf
 \If {value $\leq$ parent.left.value} 
@@ -85,7 +87,7 @@ where $\mathcal{I}$ is set of all experiences in the buffer. It is possible now 
 \end{figure}
 \clearpage
 \section{Deep neural networks in RL}
-As was stated in the previous chapter, tabular methods are very inefficient in large environments. In these instances, it is possible to use deep neural networks which can replace tables. Deep Q networks (DQN) proposed by Googles Deepmind \cite{mnih2015} outperformed all previous RL algorithms in playing Atari games. With neural networks also grew the popularity of policy gradient methods where function estimator outputs an action instead of Q values. Note that the most of these methods are general and not necessarily tied to neural networks.
+As was stated in the previous chapter, tabular methods are very inefficient in large environments. In these cases, it is possible to use deep neural networks which can replace tables. Deep Q networks (DQN) proposed by Googles Deepmind \cite{mnih2015} outperformed all previous RL algorithms in playing Atari games. With neural networks also grew the popularity of policy gradient methods where function estimator outputs an action instead of Q values. Note that most of these methods are general and not necessarily tied to neural networks.
 
 \subsection{Deep Q network}
 The neural network takes current state as input and outputs Q value for each possible action. The network is trained using gradients of Q-value in the current state with respect to trainable weights $\theta$ of our neural network.
@@ -93,10 +95,10 @@ The neural network takes current state as input and outputs Q value for each pos
 \delta_t &= R_{t} + \gamma \underset{A_{t+1}}{\max}Q^\theta(S_{t+1}, A_{t+1}) - Q^\theta(S_t, A_t)\\
 \theta_{t+1} &= \theta_t + \lambda \delta_t \nabla_\theta Q^\theta (S_t, A_t).
 \end{align}
-Gradients are updated in proportion to TD $\delta_t$. Unfortunately, this simple DQN agent suffers from a lack of sample efficiency and does not converge well. There are many techniques which can help DQNs to achieve satisfying results.
+Weights are updated in proportion to TD $\delta_t$. Unfortunately, this simple DQN agent suffers from a lack of sample efficiency and does not converge well. There are many techniques which can help DQNs to achieve satisfying results.
 
 \subsection{Target network}
-Target network is a technique which improves convergence of DQN learning \cite{mnih2015}. It uses two neural nets instead of one. The first is trained online network on a batch of data and the second target network is used for predictions during training. After the completion of training on a batch of data, the target network is updated.
+Target network is a technique which improves the convergence of DQN learning \cite{mnih2015}. It uses two neural nets instead of one. The first is trained online network on a batch of data and the second target network is used for predictions during training. After the completion of training on a batch of data, the target network is updated \cite{lilicrap2015}.
 \begin{equation}
 \theta^- = \tau \theta + (1-\tau)\theta^-,
 \end{equation}
@@ -116,14 +118,15 @@ Double DQN outperforms DQN in terms of value accuracy and in terms of policy qua
 
 \clearpage
 \section{Policy gradient}
-By this section, the goal of the neural network was predicting values by which the policy was determined. In policy gradient method neural network approximates the policy itself. 
-\begin{equation}
-\theta_{t+1} = \theta_t + \lambda \widehat{\nabla J(\theta_t)}
-\end{equation}
-where $J$ is performance measure with respect to our neural network parameters and $\widehat{\nabla J(\theta_t)}$ is stochastic estimate which approximates gradient of the performance measure. In other words, this method is basically doing stochastic gradient ascent of $J$ with respect to $\theta$ \cite{sutton1999}. Policy gradient methods are outperforming DQNs, especially in continuous action spaces, because their output is directly continuous action instead of Q-value for every possible action.
+By this section, the goal of the neural network was predicting values by which the policy was determined. In policy gradient methods neural networks approximate the policy itself. 
+\begin{align}
+J = \mathbf{E}_\pi[G_t | S_t, A_t, \theta_t] \\
+\theta_{t+1} = \theta_t + \lambda \widehat{\nabla_\theta J}
+\end{align}
+where $J$ is performance measure with respect to our neural network parameters and $\widehat{\nabla J(\theta_t)}$ is stochastic estimate of the gradient of the performance measure. In other words, this method is basically doing stochastic gradient ascent of $J$ with respect to $\theta$ \cite{sutton1999}. Policy gradient methods are outperforming DQNs, especially in continuous action spaces, because it does not have to estimate Q-value for every possible action.
 
 \subsection{Actor-Critic}
-Thanks to predicting action directly, we gain the possibility to predict in continuous action space, but the Q-value which assessed the quality of action in a certain state has been lost. That is why the Actor-Critic framework was created. It uses two separate neural networks - actor which predicts action and critic which assesses action advantage. Concept is visualised in the figure \ref{fig:actorcritic}.
+Thanks to predicting action directly, it is much easier to predict in continuous action space, but the Q-value which assessed the quality of action in a certain state has been lost. That is why the Actor-Critic framework was created. It uses two separate neural networks - actor which predicts action and critic which assesses action advantage. Concept is visualised in the Figure \ref{fig:actorcritic}.
 \begin{figure}[H]
 \centering
 \includegraphics[scale=0.55]{fig/actor-critic.png}
@@ -156,7 +159,7 @@ On the other hand, obvious drawback of the normal distribution is that there is 
 \begin{equation}
 f(x;\alpha, \beta) = \frac{\Gamma(\alpha + \beta)}{\Gamma(\alpha)\Gamma(\beta)}x^{\alpha-1}(1-x)^{\beta-1},
 \end{equation}
-where $\alpha,\beta \in R^+_0$ are distribution parameters and $x \in [0, 1]$. $\Gamma$ is Euler's gamma function, which extends factorial into the set of real numbers. Beta distribution is shown in the figure \ref{fig:beta}. The biggest advantage is that Beta distribution is bounded by definition and does not need additional clipping.
+where $\alpha,\beta \in R^+_0$ are distribution parameters and $x \in [0, 1]$. $\Gamma$ is Euler's gamma function, which extends factorial into the set of real numbers. Beta distribution is shown in the Figure \ref{fig:beta}. The biggest advantage is that Beta distribution is bounded by definition and does not need additional clipping.
 
 \begin{figure}[H]
 \centering
@@ -168,10 +171,10 @@ where $\alpha,\beta \in R^+_0$ are distribution parameters and $x \in [0, 1]$. $
 For reinforcement learning is suitable only $\alpha, \beta \geq 1$. That makes beta distribution concave and unimodal. This can be ensured by using softplus activation and adding one at the end of actor-network.
 
 \subsection{Deterministic policy gradients}
-Deep deterministic policy gradient (DDPG) is one of the methods for exploiting the Actor-Critic framework. Whereas stochastic actor predicts distribution parameters and samples an action DDPG outputs the action directly. Silver \cite{silver2014} has shown that deterministic policy can outperform its stochastic counterparts. A disadvantage of this approach is that it needs an additional policy to ensure action space exploration. Exploration methods are discussed in subsection \ref{sec:exploration}.
+Deep deterministic policy gradient (DDPG) is one of the methods for exploiting the Actor-Critic framework. Whereas stochastic actor predicts distribution parameters and samples an action, the DDPG outputs the action directly. Silver \cite{silver2014} has shown that deterministic policy can outperform its stochastic counterparts. A disadvantage of deterministic approach is that it needs an additional policy to ensure action space exploration. Exploration methods are discussed in subsection \ref{sec:exploration}.
 
 \subsection{Wolpetinger policy}
-Actor-Critic methods and DDPG work well in continuous action spaces, but there are many use cases with large discrete action spaces, such as recommender systems or lidar planning. Wolpetinger policy is approach how to utilize continuous methods in discrete action space \cite{dulac2015}. The whole policy is illustrated in figure \ref{fig:wolpetinger}. An actor doesn't predict action directly, but it predicts so-called proto-action $\tilde{A_t}$.
+Actor-Critic methods and DDPG work well in continuous action spaces, but there are many use cases with large discrete action spaces, such as recommender systems or the lidar planning discussed within the thesis. Wolpetinger policy is approach how to utilize continuous methods in discrete action space \cite{dulac2015}. The whole policy is illustrated in Figure \ref{fig:wolpetinger}. An actor doesn't predict action directly, but it predicts so-called proto-action $\tilde{A_t}$.
 \begin{equation}
 \tilde{A_t} = \mu^\theta(S_t).
 \end{equation}
@@ -179,7 +182,7 @@ Proto action mostly isn't valid action $\tilde{A_t} \notin \mathcal{A}$. Thus it
 \begin{equation} \label{eq:knn}
 \mathcal{A}_{knn} = \overset{K}{\underset{a \in \mathcal{A}}{{\text{argmin}}}} | a - \tilde{A_t} |_2 .
 \end{equation}
-Usually, policy chooses $K$ closest actions to the proto action. $\mathcal{A}_{knn}$ is the set of closest action to the proto action. The whole set is then assessed by critic and action with highest Q-value is finally picked.
+Usually, policy chooses $K$ closest actions to the proto action. $\mathcal{A}_{knn}$ is the set of closest action to the proto action. The whole set is then assessed by critic and action with the highest Q-value is finally picked.
 \begin{equation}
 A_t = \underset{a \in \mathcal{A}_{knn}}{\text{argmax}} Q^\omega(S_t, a)
 \end{equation}
@@ -192,15 +195,15 @@ A_t = \underset{a \in \mathcal{A}_{knn}}{\text{argmax}} Q^\omega(S_t, a)
 
 \subsection{Parameter and action space noise}
 \label{sec:exploration}
-In large action, space is crucial to emphasize agents exploration. Bad exploration can cause that agent converges prematurely and ends up in a local optimum. DDPG commonly uses stochastic policy to modify actors actions slightly.
+In the large action space is crucial to emphasize agents exploration. Bad exploration can cause that agent converges prematurely and ends up in a local optimum. DDPG commonly uses stochastic policy to modify actors actions slightly.
 \begin{equation} \label{eq:exploration}
 \hat{A_t} = \mu^\theta(S_t) + \mathcal{N}(0, \sigma^2)
 \end{equation}
-where $\mathcal{N}$ is the normal distribution with mean value equal to zero and variance, which is reducing during the training and $\hat{A_t}$ is perturbed action. Action space noise helps agent to explore the environment. \par Another approach is to apply noise directly to actors weights. It can sometimes lead to more consistent exploration and richer behaviors \cite{plappert2017}.
+where $\mathcal{N}$ is the normal distribution with mean value equal to zero and variance, which is reducing during the training and $\hat{A_t}$ is perturbed action. Action space noise helps agent to explore the environment. \par Another approach is to apply noise directly to actor's weights. It can sometimes lead to more consistent exploration and richer behaviors \cite{plappert2017}.
 \begin{equation}
 \hat{\theta} = \theta + \mathcal{N}(0, \sigma^2)
 \end{equation}
-where $\hat{\theta}$ is a so-called perturbed actor, which is interacting with an environment. The major issue of parameter space noise is that it is much harder to tune. When we use action space noise, it is easy to estimate its impact on actions (differences between both approaches can be seen in the figure \ref{fig:exploration}). Because of an unpredictable influence of parameter space noise is necessary to use adaptive noise scaling.
+where policy using $\hat{\theta}$ is a so-called perturbed actor, which is interacting with an environment. The major issue of parameter space noise is that it is much harder to tune. When we use action space noise, it is easy to estimate its impact on actions (differences between both approaches can be seen in the Figure \ref{fig:exploration}). Because of an unpredictable influence of parameter space noise is necessary to use adaptive noise scaling.
 \begin{align}
 d &= |\hat{A_t} - \mu^\theta(S_t)|_2  \\
 \sigma_{t+1} &= 
@@ -210,11 +213,11 @@ d &= |\hat{A_t} - \mu^\theta(S_t)|_2  \\
      \end{cases}
 \end{align}
 where $\kappa$ is scaling factor slightly bigger than one and $T$ is the threshold value, which has to be tuned to a specific environment.
-\par When is necessary to explore action space near to some specific action or include momentum of an environment, it is possible to use Ornstein-Uhlenbeck random process \citep{lilicrap2015}. 
+\par When it is necessary to explore action space near to some specific action or include momentum of an environment, it is possible to use Ornstein-Uhlenbeck random process \citep{lilicrap2015}, 
 \begin{equation}
 \hat{A_t} = \mu^\theta(S_t)  + \nu (\rho - \mu^\theta(S_t)) + \phi \mathcal{N}(0, 1),
 \end{equation}
-where $\nu, \phi \in [0, 1]$ are constants of the random process and $\nu$ is mean value around which we want to explore the action space. When $\nu = 0$ it is basic exploration as in expression \eqref{eq:exploration}.
+where $\nu, \phi \in [0, 1]$ are constants of the random process and $\rho$ is mean value around which we want to explore the action space. When $\nu = 0$ it is basic exploration as in expression \eqref{eq:exploration}.
 
 \begin{figure}[H]
 \centering
