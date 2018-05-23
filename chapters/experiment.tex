@@ -1,5 +1,5 @@
 \section{Experiment}
-The experiment aims at using reinforcement learning algorithms for solid-state lidar with steerable rays and a limited number of rays. At first, it was necessary to create an environment where the agent can learn and evaluate \cite{rozsypalek2018}. The lidar-gym environment is written in python 3 based on OpenAI gym interface \cite{openai2016}. It uses point clouds from Kitti dataset drives\cite{geiger2013}. One episode of learning in environment corresponds to one drive in Kitti dataset. Large point clouds from drives are processed into 3D voxel maps by C++ package \cite{petricek2017}, which also provides ray tracing engine for the environment. Every voxel map is a 3D array containing real numbers which correspond to the occupancy confidence $c$ of each voxel.
+The experiment aims at using reinforcement learning algorithms for controling solid-state lidar with limited number of steerable rays. For purposes of the experiment it was neccessary to implement environment, where an agent can learn and be evaluated \cite{rozsypalek2018}. The lidar-gym environment is written in Python 3 based on OpenAI gym interface \cite{openai2016}. It uses point clouds from the KITTI dataset drives\cite{geiger2013}. One episode of learning in the environment corresponds to one drive in the KITTI dataset. Large point clouds from drives are processed into 3D voxel maps by C++ package \cite{petricek2017}, which also provides ray tracing engine for the environment. Every voxel map is a 3D array containing real numbers which correspond to the occupancy confidence $c$ of each voxel.
 \begin{align}
 \begin{split}
 c &> 0 \quad \text{occupied voxel} \\
@@ -7,12 +7,14 @@ c &= 0 \quad \text{unknown occupancy} \\
 c &< 0 \quad \text{empty voxel.}
 \end{split}
 \end{align}
-The environment also offers visualization of actions using Mayavi \cite{mayavi2011} and ASCII art. Agents use neural networks as function estimators, which are handled by Tensorflow \cite{tensorflow2015} and Keras \cite{keras2015}.
+The environment also offers visualization of actions using Mayavi \cite{mayavi2011} and ASCII art. Agents use neural networks as function estimators, which are implemented in Tensorflow \cite{tensorflow2015} and Keras \cite{keras2015}.
 
 \subsection{Environments}
-Lidar-gym implements several environments, which follow the same template with different sizes. Observation space is a local cutout of voxel map, which provides occupancies from sensor's sparse measurements. The sensor is located in the quarter of x-axis and half of y-axis and z-axis of a local cutout. Action space is divided into two parts. First part is dense voxel map reconstructed from observations (sparse measurements). The second part of action space are directions of measuring rays. Each ray has own azimuth and elevation. Environment expects directions in the format of a 2D array of booleans, where true means fired ray. Environments reward is negative logistic loss $-L$ \eqref{eq:loglos}. Lidar-gym defines environments, with parameters described in table \ref{tab:envs}, and visualized in figure \ref{fig:visualization}. 
+Lidar-gym implements several environments (visualized in Figure \ref{fig:visualization}), which follow the same template with different sizes of voxel maps and action spaces. Observation space is a local cutout of voxel map, which provides occupancies from sensor's sparse measurements. The sensor is located in the quarter of x-axis and half of y-axis and z-axis of a local cutout. Action space is divided into two parts. First part is dense voxel map reconstructed from observations (sparse measurements). The second part of action space are directions of measuring rays. Each ray has own azimuth and elevation. Environment expects directions in the format of a 2D array of booleans, where true means fired ray. Reward function of the environment is negative logistic loss $-L$ \eqref{eq:loglos}. Parameters of environments are described in Table \ref{tab:envs}.
 
-\begin{table}[h]
+\clearpage
+
+\begin{table}[H]
 \centering
 \begin{tabular}{|c||c|c|c|} 
 \hline
@@ -29,7 +31,7 @@ Episode training time [min]\footnotemark{} & 120 & 15 & 1.5 \\ \hline
 \label{tab:envs}
 \end{table}
 
-\begin{figure}[!h]
+\begin{figure}[h!]
 \includegraphics[width=1\linewidth]{fig/large.png}
 \includegraphics[width=1\linewidth]{fig/toy.png}
 \caption[Environment visualization.]{Visualization of two environments: Top - Large, bottom - Toy. Ground truth map is green, reconstructed map is in grey palette, sensor position and rays are red.}
@@ -37,43 +39,44 @@ Episode training time [min]\footnotemark{} & 120 & 15 & 1.5 \\ \hline
 \end{figure}
 \renewcommand{\thefootnote}{\fnsymbol{footnote}}
 \footnotetext[1]{Using GPU Nvidia 1080Ti.}
+
 \clearpage
-Due to the high time complexity were all experiments conducted in toy environment. RL agents need significantly more training steps than supervised agents. In OpenAI baselines, \cite{openai2017} are RL agents trained for over million timestamps. One drive in Kitti dataset has on average 200 timestamps. All agents were trained and evaluated on different drives from city part of the dataset.
+Due to the high time complexity, all experiments were conducted in toy environment. The RL agents need significantly more training steps than supervised agents. Unlike the RL agents, for supervised agent is known desired output, thus it can be learned by a gradient descent on the loss function between made and desired output. There are RL agents trained for over million timestamps in OpenAI baselines \cite{openai2017}. One drive in the KITTI dataset has on average 200 epochs. All agents were trained and evaluated on different drives from the city category of the dataset.
 
 \subsection{Mapping agent}
-Mapping agent is based on work of Zimmermann et al. \cite{zimmermann2017}. It uses a convolutional neural network (CNN) for reconstructing dense map from sparse measurements. 3D convolutional layers are used to learn the features and max-pooling layers to avoid overfitting. Whole CNN architecture is described in figure \ref{fig:supervised}.
+The mapping agent is based on work of Zimmermann et al. \cite{zimmermann2017}. It uses a convolutional neural network (CNN) for reconstructing dense map from sparse measurements. 3D convolutional layers are used to learn the features and max-pooling layers to avoid overfitting. Whole CNN architecture is described in Figure \ref{fig:supervised}.
 \vspace{3mm}
 \begin{figure}[!h]
 \centering
 \includegraphics[scale=0.6]{fig/supervised.pdf}
-\caption{Mapping network architecture}
+\caption[Mapping network architecture]{Input of the supervised mapping agent is voxel map containing sparse measurements. Output is dense reconstruction of the input.}
 \label{fig:supervised}
 \end{figure}
 
-For gradient descent is used logistic loss $L$ between ground truth map $Y$ and predicted dense map $\hat{Y}$.
+Gradient descent is made by Adam optimizer \cite{adam2014}. Optimizer uses logistic loss $L$ between ground truth map $Y$ and predicted dense map $\hat{Y}$.
 \begin{equation} \label{eq:loglos}
-L(Y, \hat{Y}) = \sum\limits_i w_i \log(1 + \exp(Y_i \hat{Y_i}))
+L(Y, \hat{Y}) = \sum\limits_i w_i \log(1 + \exp(-Y_i \hat{Y_i}))
 \end{equation}
 where $w$ are weights which balance importance of occupied and unoccupied voxels.
 \pagebreak
-Unfortunately, a naive implementation of this loss function is computationally inconvenient and often cause numerical issues as underflow or overflow. To stabilize training following modified loss was used \cite{matconvnet2015}.
+Unfortunately, a naive implementation of this loss function is computationally inconvenient and often cause numerical issues as overflow. To stabilize training, following modified loss was used \cite{matconvnet2015}
 \begin{align} 
 \begin{split}
-a_i &= Y_i \hat{Y_i} \\
+a_i &= -Y_i \hat{Y_i} \\
 b_i &= \max(0, a_i) \\
 L &= \sum\limits_i w_i (b_i + \log(\exp(-b_i) + \exp(a_i-b_i))).
 \end{split}
 \end{align}
-At first, supervised mapping agent with random ray planning, is trained. Reconstructions of the supervised agent are then used for training RL planning agents and after that is mapping agent retrained with RL agent picking the rays.
+At first, supervised mapping agent with random ray planning is trained. Reconstructions of the supervised agent are then used for training RL planning agents and after that is mapping agent retrained with RL agent picking the rays.
 \subsection{Discrete planning agent}
-Insomuch as the input of the environment for a direction of the rays is 2D binary array, first try is to use a discrete agent. DQN is the most used option for discrete action space, but in this use case, it requires some tweaks. Note that number of possible actions is extremely large. Even in toy environment it is $40\times30 \choose 15$ $\approx 10^{34}$ of actions. Thus it is necessary to emphasize on action space exploration. Further arises the problem with $\epsilon$-greedy policy, because we are unable to process all possible actions and pick one with the biggest Q-value. To solve this issue is considered one ray as an action and for $K$ rays is TD from \eqref{eq:qlearn} now computed as:
+Since the action of the environment $A_t$ for a direction of the rays is 2D binary array, first try is to use a discrete agent. DQN is the most used option for discrete action space, but in this use case, it requires some tweaks. Note that number of possible actions is extremely large. Even in toy environment it is $40\times30 \choose 15$ $\approx 10^{34}$ of actions. Thus it is necessary to emphasize action space exploration. Further arises the problem with the $\epsilon$-greedy policy, because we are unable to process all possible actions and pick one with the biggest Q-value. We consider only one ray as action to resolve this issure. For $K$ rays is TD from \eqref{eq:qlearn} now computed as:
 \begin{align} \label{eq:dql}
 \begin{split}
 q(S_t, A_t) &= \max\limits_{A_t}^K Q^\theta(S_t, A_t)\\
 \delta_t &= R_t + \gamma \overline{q}(S_{t+1}, A_{t+1}) - \overline{q}(S_t, A_t)
 \end{split}
 \end{align}
-where $\overline{q}$ is average $Q$ value over $K$ actions with maximal $Q$ values. DQN agent implements all available features described in the theoretical part of this thesis as Prioritized experience replay, target network, and double Q learning. Exploration is ensured by action space noise. Parameter values of agent are shown in table \ref{tab:dqlparam} and neural network architecture in figure \ref{fig:dqn}. For gradient descent is used Adam optimizer with learning rate $\lambda$.
+where $\overline{q}$ is average $Q$ value over $K$ actions with maximum $Q$ values. DQN agent implements all features as Prioritized experience replay, target network, and double Q learning which are described in the theoretical part of this thesis. Exploration is ensured by action space noise. Neural network architecture is described in Figure \ref{fig:dqn}. The agent uses values of parameters shown in Table \ref{tab:params}. The weights are updated via stochastic optimizer Adam with learning rate $\lambda$.
 
 \clearpage
 \begin{figure}[!h]
@@ -83,12 +86,9 @@ where $\overline{q}$ is average $Q$ value over $K$ actions with maximal $Q$ valu
 \label{fig:dqn}
 \end{figure}
 
-\subsubsection{Wolpetinger policy}
-Wolpetinger policy is currently the state-of-the-art method for discrete action spaces because it utilizes actor-critic to continuous methods. It was tested on recommender systems with over a million discrete actions \cite{dulac2015}. That is large action space, but significantly smaller than action space of Lidar-gym environment. The obvious problem comes in place during action embedding in formula \eqref{eq:knn}. It is not possible to compute KNN with so many possible actions. When is KNN substituted by picking rays with the highest value, the agent does not converge well. It abandons some possible actions very soon and gets stuck in local optimum.
-
 \clearpage
 \subsection{Continuous planning agent}
-The discrete action output was substituted by continuous action, which is then mapped into a 2D binary array. This will allow the agent to avoid extremely large discrete action space. Thank this substitution it is possible to exploit actor-critic framework. The output of actor is now $2$ by $K$ array where the first row is the elevation and second is the azimuth of each ray. The last layer of the actor-network is tanh function, so its output is an element of $[-1, 1]$. As training method is used DDPG. The neural network architecture is described in the figure \ref{fig:ddpg}.
+The discrete action output was substituted by continuous action, which is then mapped into a 2D binary array. This will allow the agent to avoid extremely large discrete action space. Thank to this substitution it is possible to exploit actor-critic framework. The output the of actor is now $2$ by $K$ array where the first row is the elevation and second is the azimuth of each ray. The last layer of the actor-network is tanh function, so its output is an element of $[-1, 1]$. As training method is used DDPG. The neural network architecture is described in the Figure \ref{fig:ddpg}.
 
 \begin{figure}[!h]
 \centering
@@ -98,7 +98,7 @@ The discrete action output was substituted by continuous action, which is then m
 \end{figure}
 
 \pagebreak
-To explore action space correctly, it is necessary to apply Ornstein-Uhlenbeck random process. When only Gaussian noise is added, actions tend to converge into the corners very fast as in figure \ref{fig:expdiff}. For both actor and critic is used Adam optimizer with learning rates $\lambda_{a}$, $\lambda_{c}$. To stabilize critic learning is used target network. The continuous agent also uses prioritized experience replay.
+To explore action space correctly in our experiments, it is necessary to apply Ornstein-Uhlenbeck random process. When only Gaussian noise is added, actions tend to converge into the corners very fast as in Figure \ref{fig:expdiff}. For actor's and critic's neural network is used Adam optimizer with learning rates $\lambda_{a}$, $\lambda_{c}$. The target networks are used to stabilize learning of actor and critic. The continuous agent also uses prioritized experience replay.
 
 \begin{figure}[H]
 \begin{subfigure}[h]{0.5\linewidth}
@@ -114,7 +114,7 @@ To explore action space correctly, it is necessary to apply Ornstein-Uhlenbeck r
 \end{figure}
 
 \subsection{Stochastic planning agent}
-There is an obvious issue with the deterministic actor. For efficient exploring of ground truth map is required to hit as many unique voxels as possible. Thus making several similar actions in a row is not a good strategy. Unfortunately, except first few timestamps of every drive, there is not a big difference between two subsequent observations. It is hard for a neural network to make two different outputs for two similar inputs. The solution to this problem could be a stochastic agent. Stochastic agent outputs parameters of beta distribution and preserves actor-critic framework. The architecture of stochastic agent is similar to DDPG from the previous subsection, only difference is that agent now outputs just two values - distribution parameters. Action is then sampled with distribution probabilities. Stochastic actor output can be seen in figure \ref{fig:stochaction}.
+There is an obvious issue with the deterministic actor. For efficient exploring of ground truth map, it is required to hit as many unique voxels as possible. Thus making several similar actions in a row is not a good strategy. Unfortunately, except first few epochs of every drive, there is not a big difference between two subsequent observations. It is hard for a neural network to make two different outputs for two similar inputs. The solution to this problem could be a stochastic agent. The stochastic agent outputs parameters of beta distribution and preserves actor-critic framework. The architecture of stochastic agent is similar to DDPG from the previous subsection, the only difference is that the agent now outputs only two values - the distribution parameters. Action is then sampled with distribution probabilities. Stochastic actor output can be seen in Figure \ref{fig:stochaction}.
 
 \clearpage
 
@@ -126,7 +126,7 @@ There is an obvious issue with the deterministic actor. For efficient exploring 
 \end{figure}
 
 \subsection{Comparison of methods}
-Several methods were tried. Unfortunately most of the methods are not doing well in Lidar-gym environment. The worst performance had the DQL. That is probably caused by an extremely large set of possible actions. Workaround made in formula \eqref{eq:dql}, did not help agent to converge. Continuous DDPG agent also did not converge successfully. It is  hard for DDPG agent to change direction of rays efficiently in subsequent timestamps and it often makes several same actions in a row, that degrades performance a lot. Only stochastic agent was able to outperform a random agent. Summary of agents performances is made in figure \ref{fig:roc}. It turns out that it is very difficult to get satisfying results. Stochastic agent converge, but it does not use any kind of advanced strategy. Action space of this agent does not even allow him to do any sophisticated action. Therefore were also conducted experiments with extended stochastic agent, which have used beta distribution for each ray separately, but with no significant success. Another advantage of simple stochastic agent is its scalability. This agent can be adjusted to the large environment much easier than any other used agent. Parameters used for these agents are described in table \ref{tab:params}.
+Several methods were tried. Unfortunately, most of the methods do not perform well in the Lidar-gym environment. The DQL had the worst performance. That is probably caused by the extremly large action space. The workaround made in formula \eqref{eq:dql}, did not help the agent to converge. Continuous DDPG agent also did not converge successfully. For DDPG agent is hard to change direction of rays efficiently in subsequent timestamps and it often makes several same actions in a row, that degrades performance a lot. Only the stochastic agent was able to outperform a random agent. Summary of agents performances is made in Figure \ref{fig:roc}. It turns out that it is very difficult to get satisfying results. Stochastic agent converges, but it does not use any kind of advanced strategy. Output of the DDPG actor does not even allow him to make any sophisticated action. Therefore were also conducted experiments with an extended stochastic agent, which used beta distribution for each ray separately, but with no significant success. Another advantage of simple stochastic agent is its scalability. This agent can be adjusted to the large environment much easier than any other used agent. Parameters used for these agents are described in Table \ref{tab:params}.
 
 \clearpage
 
@@ -137,14 +137,14 @@ Several methods were tried. Unfortunately most of the methods are not doing well
     Parameter & Value \\
     \midrule
     $\gamma$ & 0.09 \\
-    $\lambda_{critic}$ & 0.001 \\
-    $\lambda_{actor}$ & 0.0001 \\
+    $\lambda_{c}$ & 0.001 \\
+    $\lambda_{a}$ & 0.0001 \\
     $\tau$ & 0.01 \\
     Memory size & 4096 \\
     Batch size & 8 \\
     \bottomrule
   \end{tabular}
-  \caption[Learning parameters]{Parameters used for learning.}
+  \caption[Learning parameters]{Parameters used for learning. DQN uses $\lambda = \lambda_{c}$}
   \label{tab:params}
 \end{table}
 

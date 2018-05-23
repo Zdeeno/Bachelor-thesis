@@ -173,26 +173,6 @@ For reinforcement learning is suitable only $\alpha, \beta \geq 1$. That makes b
 \subsection{Deterministic policy gradients}
 Deep deterministic policy gradient (DDPG) is one of the methods for exploiting the Actor-Critic framework. Whereas stochastic actor predicts distribution parameters and samples an action, the DDPG outputs the action directly. Silver \cite{silver2014} has shown that deterministic policy can outperform its stochastic counterparts. A disadvantage of deterministic approach is that it needs an additional policy to ensure action space exploration. Exploration methods are discussed in subsection \ref{sec:exploration}.
 
-\subsection{Wolpetinger policy}
-Actor-Critic methods and DDPG work well in continuous action spaces, but there are many use cases with large discrete action spaces, such as recommender systems or the lidar planning discussed within the thesis. Wolpetinger policy is approach how to utilize continuous methods in discrete action space \cite{dulac2015}. The whole policy is illustrated in Figure \ref{fig:wolpetinger}. An actor doesn't predict action directly, but it predicts so-called proto-action $\tilde{A_t}$.
-\begin{equation}
-\tilde{A_t} = \mu^\theta(S_t).
-\end{equation}
-Proto action mostly isn't valid action $\tilde{A_t} \notin \mathcal{A}$. Thus it is necessary to find the valid action corresponding to the proto action. That is done by computing Euclidean distance to every possible action.
-\begin{equation} \label{eq:knn}
-\mathcal{A}_{knn} = \overset{K}{\underset{a \in \mathcal{A}}{{\text{argmin}}}} | a - \tilde{A_t} |_2 .
-\end{equation}
-Usually, policy chooses $K$ closest actions to the proto action. $\mathcal{A}_{knn}$ is the set of closest action to the proto action. The whole set is then assessed by critic and action with the highest Q-value is finally picked.
-\begin{equation}
-A_t = \underset{a \in \mathcal{A}_{knn}}{\text{argmax}} Q^\omega(S_t, a)
-\end{equation}
-\begin{figure}[!h]
-\centering
-\includegraphics[scale=0.35]{fig/wolpetinger-policy.png}
-\caption[Wolpetinger policy illustration] {Wolpetinger policy can be described in 3 steps. \textbf{1)} Actor outputs an action \textbf{2)} The $K$ nearest valid actions are found \textbf{3)} Choose the action which is assessed as the best by the critic. Source - \cite{dulac2015}.}
-\label{fig:wolpetinger}
-\end{figure}
-
 \subsection{Parameter and action space noise}
 \label{sec:exploration}
 In the large action space is crucial to emphasize agents exploration. Bad exploration can cause that agent converges prematurely and ends up in a local optimum. DDPG commonly uses stochastic policy to modify actors actions slightly.
