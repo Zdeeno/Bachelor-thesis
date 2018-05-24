@@ -60,11 +60,11 @@ Prioritized experience replay is biologically inspired mechanism introduced by S
 \begin{equation}
 p = (|\delta_t | + \eta)^\rho
 \end{equation}
-where $\rho$ indicates how much we prefer experience with higher priority and $\eta \ll 1$ is a constant which helps to avoid priorities very close to zero. Considering a greedy selection would abandon experience with low priority, a better approach is to choose experience $i \in \mathcal{I}$ with probability:
+where $\rho$ indicates how much we prefer experience with higher priority and $\eta \ll 1$ is a constant which helps to avoid the priorities very close to zero. Considering a greedy selection would abandon experience with low priority, a better approach is to choose experience $i \in \mathcal{I}$ with probability:
 \begin{equation}
 P(i) = \frac{p_i}{\sum\limits_{j \in \mathcal{I}} p_j},
 \end{equation}
-where $\mathcal{I}$ is set of all experience in the buffer. It is possible now to sample a batch of experience for training using this probability. It removes correlation in the observation sequence and improves sample efficiency of DQN. It is feasible to store all experience in a buffer sorted by priority, but a more efficient implementation is a sum tree. That is a binary tree, where the value of each root is equal to the sum of its children values (see Figure \ref{fig:sumtree}). Example of usage is in algorithm \ref{alg:sumtree}.
+where $\mathcal{I}$ is set of all experience in the buffer. It is possible now to sample a batch of experience for training using this probability. It removes a correlation in the observation sequence and improves sample efficiency of DQN. It is feasible to store all the experience in a buffer sorted by priority, but a more efficient implementation is a sum tree. That is a binary tree, where the value of each root is equal to the sum of its children values (see Figure \ref{fig:sumtree}). Example of usage is in algorithm \ref{alg:sumtree}.
 \begin{algorithm}
 \caption{Retrieve node from sum tree in pseudocode}
 \label{alg:sumtree}
@@ -87,7 +87,7 @@ where $\mathcal{I}$ is set of all experience in the buffer. It is possible now t
 \end{figure}
 \clearpage
 \section{Deep neural networks in RL}
-As was stated in the previous chapter, tabular methods are very inefficient in large environments. In these cases, it is possible to use deep neural networks which can replace tables. Deep Q networks (DQN) proposed by Googles Deepmind \cite{mnih2015} outperformed all previous RL algorithms in playing Atari games. With neural networks also grew the popularity of policy gradient methods where function estimator outputs an action instead of Q values. Note that most of these methods are general and not necessarily tied to neural networks.
+As was stated in the previous chapter, tabular methods are very inefficient in large environments. In these cases, it is possible to use deep neural networks which can replace tables. Deep Q networks (DQN) proposed by Googles Deepmind \cite{mnih2015} outperformed all previous RL algorithms in playing Atari games. With neural networks also grew the popularity of policy gradient methods where function estimator outputs an action instead of Q values. Note that most of these methods are general and not necessarily tied to the neural networks.
 
 \subsection{Deep Q network}
 The neural network takes current state as input and outputs Q value for each possible action. The network is trained using gradients of Q-value in the current state with respect to trainable weights $\theta$ of our neural network.

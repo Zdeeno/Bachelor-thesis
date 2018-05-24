@@ -7,12 +7,9 @@ c &= 0 \quad \text{unknown occupancy} \\
 c &< 0 \quad \text{empty voxel.}
 \end{split}
 \end{align}
-The environment also offers visualization of actions using Mayavi \cite{mayavi2011} and ASCII art. Agents use neural networks as function estimators, which are implemented in Tensorflow \cite{tensorflow2015} and Keras \cite{keras2015}.
 
 \subsection{Environments}
 Lidar-gym implements several environments (visualized in Figure \ref{fig:visualization}), which follow the same template with different sizes of voxel maps and action spaces. Observation space is a local cutout of voxel map, which provides occupancies from sensor's sparse measurements. The sensor is located in the quarter of x-axis and half of y-axis and z-axis of a local cutout. Action space is divided into two parts. First part is dense voxel map reconstructed from observations (sparse measurements). The second part of action space are directions of measuring rays. Each ray has own azimuth and elevation. Environment expects directions in the format of a 2D array of booleans, where true means fired ray. Reward function of the environment is negative logistic loss $-L$ \eqref{eq:loglos}. Parameters of environments are described in Table \ref{tab:envs}.
-
-\clearpage
 
 \begin{table}[H]
 \centering
@@ -31,10 +28,23 @@ Episode training time [min]\footnotemark{} & 120 & 15 & 1.5 \\ \hline
 \label{tab:envs}
 \end{table}
 
+\clearpage
+
+The environments also offers visualization of actions using Mayavi \cite{mayavi2011} and ASCII art. Agents use neural networks as function estimators, which are implemented in Tensorflow \cite{tensorflow2015} and Keras \cite{keras2015}.
+
 \begin{figure}[h!]
-\includegraphics[width=1\linewidth]{fig/large.png}
-\includegraphics[width=1\linewidth]{fig/toy.png}
-\caption[Environment visualization.]{Visualization of two environments: Top - Large, bottom - Toy. Ground truth map is green, reconstructed map is in grey palette, sensor position and rays are red.}
+\centering
+\includegraphics[width=0.8\linewidth]{fig/gt.png}
+
+\vspace{1mm}
+
+\includegraphics[width=0.8\linewidth]{fig/sparse.png}
+
+\vspace{1mm}
+
+\includegraphics[width=0.8\linewidth]{fig/reconstructed.png}
+
+\caption[Environment visualization]{Visualization of the large environment: The first figure is the ground truth map, second is the voxel map of sparse measurements and third figure shows the dense reconstruction. The dense reconstruction in third figure and the rays fired in second picture are made by an agent using the random planner. Some known structures as cars and trees can be seen in the reconstructed map.}
 \label{fig:visualization}
 \end{figure}
 \renewcommand{\thefootnote}{\fnsymbol{footnote}}
@@ -98,7 +108,7 @@ The discrete action output was substituted by continuous action, which is then m
 \end{figure}
 
 \pagebreak
-To explore action space correctly in our experiments, it is necessary to apply Ornstein-Uhlenbeck random process. When only Gaussian noise is added, actions tend to converge into the corners very fast as in Figure \ref{fig:expdiff}. For actor's and critic's neural network is used Adam optimizer with learning rates $\lambda_{a}$, $\lambda_{c}$. The target networks are used to stabilize learning of actor and critic. The continuous agent also uses prioritized experience replay.
+To explore action space in our experiments correctly, it is necessary to apply Ornstein-Uhlenbeck random process. When only Gaussian noise is added, actions tend to converge into the corners very fast as in Figure \ref{fig:expdiff}. For actor's and critic's neural network is used Adam optimizer with learning rates $\lambda_{a}$, $\lambda_{c}$. The target networks are used to stabilize learning of actor and critic. The continuous agent also uses prioritized experience replay.
 
 \begin{figure}[H]
 \begin{subfigure}[h]{0.5\linewidth}
