@@ -50,10 +50,10 @@
 \begin{document}
 \DocBegin
 %% Asymetric margins
-%% LEAVE ONLY IN THE PRINTED VERSION
+%% LEAVE ONLY IN THE PRINTED VERSION !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 %% the electronic version should have symetric margins
-% \setlength{\oddsidemargin}{+0.5cm} 
-% \setlength{\evensidemargin}{-0.5cm}
+ \setlength{\oddsidemargin}{+0.5cm} 
+ \setlength{\evensidemargin}{-0.5cm}
 %%
 
 % Titulní stránka
@@ -61,30 +61,10 @@
 \pagestyle{empty}
 \cleardoublepage
 
-%% The printed version of the acknowledgement page
-%% LEAVE ONLY FOR PRINT
-%\input{chapters/acknowledgement}
-%\cleardoublepage
-%%
-
-%% the scanned acknowledgement
-%% LEAVE ONLY FOR THE ELECTRONIC VERSION
-%~\vfill
-%\includegraphics[width=1\textwidth]{acknowledgement.jpg}
-%\cleardoublepage
-%%
-
-%% the scanned page (signed) with the assignement
-%% LEAVE ONLY FOR THE ELECTRONIC VERSION
-%\includepdf[pages={1}]{assignment_czech.pdf}
-%\cleardoublepage
-%\includepdf[pages={1}]{assignment_english.pdf}
-%\cleardoublepage
-%%
-\includepdf[pages={1}]{zav_prace.pdf}
+\includepdf[pages={1}]{acknowledgement.pdf}
 \cleardoublepage
 
-\includepdf[pages={1}]{acknowledgement.pdf}
+\includepdf[pages={1}]{zav_prace.pdf}
 \cleardoublepage
 
 \input{chapters/acknowledgement}
@@ -94,45 +74,47 @@
 \input{chapters/abstract_cz}
 \cleardoublepage
 
-\pagestyle{fancy}
 \pagenumbering{roman}
 \cfoot{\thepage}
+
 \tableofcontents
 \cleardoublepage
 
 \listoffigures
 \cleardoublepage
 
+
 \pagestyle{fancy}
+\fancyhf{}
 \pagenumbering{arabic}
 \cfoot{}
-\rfoot{\thepage$/$\pageref{LastPage}}
+\fancyfoot[RO,LE]{\thepage$/$\pageref{LastPage}}
 \setlength{\parskip}{0.35cm}
 
-\lhead{INTRODUCTION}
+\fancyhead[RO,LE]{INTRODUCTION}
 \input{chapters/introduction}
 \clearpage
 
-\lhead{THEORETICAL BACKGROUND}
+\fancyhead[RO,LE]{THEORETICAL BACKGROUND}
 \input{chapters/theoretical_background}
 \clearpage
 
-\lhead{EXPERIMENT}
+\fancyhead[RO,LE]{EXPERIMENT}
 \input{chapters/experiment}
 \clearpage
 
-\lhead{CONCLUSION}
+\fancyhead[RO,LE]{CONCLUSION}
 \input{chapters/conclusion}
 \cleardoublepage
 
-\lhead{LIST OF REFERENCES}
+\fancyhead[RO,LE]{LIST OF REFERENCES}
 % the list of all literature should be supplied in main.bib
 \bibliographystyle{unsrt}
 \bibliography{main}{}
 \clearpage
 
 \appendices
-\lhead{\emph{APPENDIX \leftmark}} 
+\fancyhead[RO,LE]{APPENDIX}
 \input{chapters/cd_content}
 \cleardoublepage
 

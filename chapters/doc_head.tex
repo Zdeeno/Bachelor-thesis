@@ -21,6 +21,7 @@
 \usepackage{algpseudocode}% http://ctan.org/pkg/algorithmicx
 \algtext*{EndWhile}% Remove "end while" text
 \algtext*{EndIf}% Remove "end if" text
+\algtext*{EndFunction}% Remove "end if" text
 
 \lstset{breaklines=true,captionpos=b,frame=single,language=sh,float=h}
 \lstloadlanguages{sh,c}
@@ -87,7 +88,7 @@ pdfkeywords={\Keywords}
 \special{ps: @endspecial}
 }
 
-\pagestyle{fancy}
+% \pagestyle{fancy}
 \setlength{\headheight}{18pt}
 
 %\lfoot{ČVUT FEL, Katedra Kybernetiky, Gerstner Laboratory}
@@ -96,7 +97,7 @@ pdfkeywords={\Keywords}
 
 \fancypagestyle{plain}
 
-\fancyhead[R]{}
+% \fancyhead[R]{}
 
 \newcommand{\DocBegin}{
 \ifx\glreport\undefined
