@@ -52,8 +52,8 @@
 %% Asymetric margins
 %% LEAVE ONLY IN THE PRINTED VERSION !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 %% the electronic version should have symetric margins
- \setlength{\oddsidemargin}{+0.5cm} 
- \setlength{\evensidemargin}{-0.5cm}
+% \setlength{\oddsidemargin}{+0.5cm} 
+% \setlength{\evensidemargin}{-0.5cm}
 %%
 
 % Titulní stránka
@@ -88,33 +88,33 @@
 \fancyhf{}
 \pagenumbering{arabic}
 \cfoot{}
-\fancyfoot[RO,LE]{\thepage$/$\pageref{LastPage}}
+\fancyfoot[RO,RE]{\thepage$/$\pageref{LastPage}}
 \setlength{\parskip}{0.35cm}
 
-\fancyhead[RO,LE]{INTRODUCTION}
+\fancyhead[LO,LE]{INTRODUCTION}
 \input{chapters/introduction}
 \clearpage
 
-\fancyhead[RO,LE]{THEORETICAL BACKGROUND}
+\fancyhead[LO,LE]{THEORETICAL BACKGROUND}
 \input{chapters/theoretical_background}
 \clearpage
 
-\fancyhead[RO,LE]{EXPERIMENT}
+\fancyhead[LO,LE]{EXPERIMENT}
 \input{chapters/experiment}
 \clearpage
 
-\fancyhead[RO,LE]{CONCLUSION}
+\fancyhead[LO,LE]{CONCLUSION}
 \input{chapters/conclusion}
 \cleardoublepage
 
-\fancyhead[RO,LE]{LIST OF REFERENCES}
+\fancyhead[LO,LE]{LIST OF REFERENCES}
 % the list of all literature should be supplied in main.bib
 \bibliographystyle{unsrt}
 \bibliography{main}{}
 \clearpage
 
 \appendices
-\fancyhead[RO,LE]{APPENDIX}
+\fancyhead[LO,LE]{APPENDIX}
 \input{chapters/cd_content}
 \cleardoublepage
 
