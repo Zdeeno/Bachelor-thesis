@@ -1,4 +1,5 @@
 clear all;
+clc;
 [X,Y] = meshgrid(0:0.001:1);
 azalpha = 1.5;
 azbeta = 1.5;
